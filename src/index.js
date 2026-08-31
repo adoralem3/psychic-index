@@ -8,7 +8,6 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // Database health check
     if (url.pathname === "/api/health") {
       let database = "connected";
 
@@ -25,14 +24,41 @@ export default {
       });
     }
 
-    // Admin area
     if (url.pathname === "/admin") {
-      const session = await getSession(request, env);
+      let session;
+
+      try {
+        session = await getSession(request, env);
+      } catch (error) {
+        return Response.json(
+          {
+            error: "Authentication system error"
+          },
+          { status: 500 }
+        );
+      }
 
       if (!session) {
-        return Response.redirect(
-          `${url.origin}/admin/login`,
-          302
+        return new Response(
+          `<!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Psychic Index Admin</title>
+          </head>
+          <body>
+            <h1>Psychic Index Admin</h1>
+            <p>You are not logged in.</p>
+            <p>The login page will be added next.</p>
+          </body>
+          </html>`,
+          {
+            status: 401,
+            headers: {
+              "Content-Type": "text/html; charset=UTF-8"
+            }
+          }
         );
       }
 
@@ -47,7 +73,6 @@ export default {
         <body>
           <h1>Psychic Index Admin</h1>
           <p>Welcome, ${escapeHtml(session.email)}</p>
-          <p>You are successfully logged in.</p>
 
           <form method="POST" action="/admin/logout">
             <button type="submit">Log out</button>
@@ -62,7 +87,6 @@ export default {
       );
     }
 
-    // Admin logout
     if (
       url.pathname === "/admin/logout" &&
       request.method === "POST"
@@ -72,7 +96,7 @@ export default {
       return new Response(null, {
         status: 302,
         headers: {
-          "Location": "/admin/login",
+          Location: "/admin/login",
           "Set-Cookie": clearSessionCookie()
         }
       });
