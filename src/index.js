@@ -6,7 +6,7 @@ export default {
     const adminPath = "/admin/" + ADMIN_KEY;
 
     // ==========================================
-    // DATABASE HEALTH
+    // HEALTH CHECK
     // ==========================================
 
     if (url.pathname === "/api/health") {
@@ -37,26 +37,9 @@ export default {
 
     if (url.pathname === "/api/articles") {
       try {
-        const result = await env.DB.prepare(`
-          SELECT
-            id,
-            title,
-            slug,
-            excerpt,
-            content,
-            featured_image,
-            category,
-            seo_title,
-            seo_description,
-            status,
-            created_at,
-            updated_at,
-            published_at
-          FROM articles
-          WHERE status = 'published'
-          ORDER BY COALESCE(published_at, created_at) DESC
-          LIMIT 20
-        `).all();
+        const result = await env.DB.prepare(
+          "SELECT id, title, slug, excerpt, content, featured_image, category, seo_title, seo_description, status, created_at, updated_at, published_at FROM articles WHERE status = 'published' ORDER BY COALESCE(published_at, created_at) DESC LIMIT 20"
+        ).all();
 
         return new Response(
           JSON.stringify({
@@ -94,7 +77,7 @@ export default {
     if (url.pathname.startsWith("/api/articles/")) {
       const slug = decodeURIComponent(
         url.pathname.substring("/api/articles/".length)
-      ).replace(/\/$/, "");
+      );
 
       if (!slug) {
         return Response.json(
@@ -107,26 +90,9 @@ export default {
       }
 
       try {
-        const article = await env.DB.prepare(`
-          SELECT
-            id,
-            title,
-            slug,
-            excerpt,
-            content,
-            featured_image,
-            category,
-            seo_title,
-            seo_description,
-            status,
-            created_at,
-            updated_at,
-            published_at
-          FROM articles
-          WHERE slug = ?
-            AND status = 'published'
-          LIMIT 1
-        `)
+        const article = await env.DB.prepare(
+          "SELECT id, title, slug, excerpt, content, featured_image, category, seo_title, seo_description, status, created_at, updated_at, published_at FROM articles WHERE slug = ? AND status = 'published' LIMIT 1"
+        )
           .bind(slug)
           .first();
 
@@ -140,19 +106,10 @@ export default {
           );
         }
 
-        return new Response(
-          JSON.stringify({
-            status: "ok",
-            article
-          }),
-          {
-            status: 200,
-            headers: {
-              "Content-Type": "application/json; charset=UTF-8",
-              "Cache-Control": "public, max-age=60"
-            }
-          }
-        );
+        return Response.json({
+          status: "ok",
+          article
+        });
       } catch (error) {
         return Response.json(
           {
@@ -251,27 +208,25 @@ export default {
       }
 
       try {
-        const article = await env.DB.prepare(`
-          SELECT *
-          FROM articles
-          WHERE slug = ?
-            AND status = 'published'
-          LIMIT 1
-        `)
+        const article = await env.DB.prepare(
+          "SELECT * FROM articles WHERE slug = ? AND status = 'published' LIMIT 1"
+        )
           .bind(slug)
           .first();
 
         if (!article) {
           return new Response("Article not found.", {
-            status: 404
+            status: 404,
+            headers: {
+              "Content-Type": "text/plain; charset=UTF-8"
+            }
           });
         }
 
         return articlePage(article);
       } catch (error) {
         return new Response(
-          "Could not load article.\n\n" +
-            errorMessage(error),
+          "Could not load article.\n\n" + errorMessage(error),
           {
             status: 500,
             headers: {
@@ -297,35 +252,13 @@ export default {
 
 async function adminDashboard(env, adminPath) {
   try {
-    const stats = await env.DB.prepare(`
-      SELECT
-        COUNT(*) AS total,
-        SUM(
-          CASE
-            WHEN status = 'published' THEN 1
-            ELSE 0
-          END
-        ) AS published,
-        SUM(
-          CASE
-            WHEN status = 'draft' THEN 1
-            ELSE 0
-          END
-        ) AS drafts
-      FROM articles
-    `).first();
+    const stats = await env.DB.prepare(
+      "SELECT COUNT(*) AS total, SUM(CASE WHEN status = 'published' THEN 1 ELSE 0 END) AS published, SUM(CASE WHEN status = 'draft' THEN 1 ELSE 0 END) AS drafts FROM articles"
+    ).first();
 
-    const recent = await env.DB.prepare(`
-      SELECT
-        id,
-        title,
-        category,
-        status,
-        updated_at
-      FROM articles
-      ORDER BY updated_at DESC
-      LIMIT 6
-    `).all();
+    const recent = await env.DB.prepare(
+      "SELECT id, title, category, status, updated_at FROM articles ORDER BY updated_at DESC LIMIT 6"
+    ).all();
 
     let recentRows = "";
 
@@ -333,10 +266,7 @@ async function adminDashboard(env, adminPath) {
       recentRows += `
         <tr>
           <td>
-            <a
-              class="article-link"
-              href="${adminPath}/articles/edit?id=${article.id}"
-            >
+            <a class="article-link" href="${adminPath}/articles/edit?id=${article.id}">
               ${escapeHtml(article.title)}
             </a>
           </td>
@@ -372,181 +302,139 @@ async function adminDashboard(env, adminPath) {
         "dashboard",
         adminPath,
         `
-          <div class="welcome-row">
+        <div class="welcome-row">
+          <div>
+            <div class="eyebrow">ADMINISTRATION</div>
+            <h1>Good afternoon</h1>
+            <p>Welcome back to your Psychic Index dashboard.</p>
+          </div>
+
+          <a class="primary-button" href="${adminPath}/articles/new">
+            <span>+</span>
+            New Article
+          </a>
+        </div>
+
+        <div class="stats-grid">
+
+          <div class="stat-card">
+            <div class="stat-icon purple">✦</div>
             <div>
-              <div class="eyebrow">ADMINISTRATION</div>
-
-              <h1>Good afternoon</h1>
-
-              <p>
-                Welcome back to your Psychic Index dashboard.
-              </p>
+              <div class="stat-number">${stats?.total || 0}</div>
+              <div class="stat-label">Total Articles</div>
             </div>
-
-            <a
-              class="primary-button"
-              href="${adminPath}/articles/new"
-            >
-              <span>+</span>
-              New Article
-            </a>
           </div>
 
-          <div class="stats-grid">
-
-            <div class="stat-card">
-              <div class="stat-icon purple">✦</div>
-
-              <div>
-                <div class="stat-number">
-                  ${stats?.total || 0}
-                </div>
-
-                <div class="stat-label">
-                  Total Articles
-                </div>
-              </div>
+          <div class="stat-card">
+            <div class="stat-icon green">✓</div>
+            <div>
+              <div class="stat-number">${stats?.published || 0}</div>
+              <div class="stat-label">Published</div>
             </div>
-
-            <div class="stat-card">
-              <div class="stat-icon green">✓</div>
-
-              <div>
-                <div class="stat-number">
-                  ${stats?.published || 0}
-                </div>
-
-                <div class="stat-label">
-                  Published
-                </div>
-              </div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-icon amber">◷</div>
-
-              <div>
-                <div class="stat-number">
-                  ${stats?.drafts || 0}
-                </div>
-
-                <div class="stat-label">
-                  Draft Articles
-                </div>
-              </div>
-            </div>
-
           </div>
 
-          <div class="content-grid">
+          <div class="stat-card">
+            <div class="stat-icon amber">◷</div>
+            <div>
+              <div class="stat-number">${stats?.drafts || 0}</div>
+              <div class="stat-label">Draft Articles</div>
+            </div>
+          </div>
 
-            <section class="panel large-panel">
+        </div>
 
-              <div class="panel-header">
+        <div class="content-grid">
+
+          <section class="panel large-panel">
+
+            <div class="panel-header">
+              <div>
+                <h2>Recent Articles</h2>
+                <p>Your latest content activity</p>
+              </div>
+
+              <a class="text-link" href="${adminPath}/articles">
+                View all
+              </a>
+            </div>
+
+            <div class="table-wrapper">
+              <table>
+
+                <thead>
+                  <tr>
+                    <th>Article</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Updated</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  ${recentRows}
+                </tbody>
+
+              </table>
+            </div>
+
+          </section>
+
+          <section class="panel">
+
+            <div class="panel-header">
+              <div>
+                <h2>Quick Actions</h2>
+                <p>Manage your website</p>
+              </div>
+            </div>
+
+            <div class="quick-actions">
+
+              <a href="${adminPath}/articles/new" class="quick-action">
+                <div class="quick-icon">✎</div>
+
                 <div>
-                  <h2>Recent Articles</h2>
-
-                  <p>
-                    Your latest content activity
-                  </p>
+                  <strong>Write an article</strong>
+                  <span>Create new content</span>
                 </div>
 
-                <a
-                  class="text-link"
-                  href="${adminPath}/articles"
-                >
-                  View all
-                </a>
-              </div>
+                <span class="arrow">→</span>
+              </a>
 
-              <div class="table-wrapper">
+              <a href="${adminPath}/articles" class="quick-action">
+                <div class="quick-icon">☰</div>
 
-                <table>
-
-                  <thead>
-                    <tr>
-                      <th>Article</th>
-                      <th>Category</th>
-                      <th>Status</th>
-                      <th>Updated</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    ${recentRows}
-                  </tbody>
-
-                </table>
-
-              </div>
-
-            </section>
-
-            <section class="panel">
-
-              <div class="panel-header">
                 <div>
-                  <h2>Quick Actions</h2>
+                  <strong>Manage articles</strong>
+                  <span>Edit existing content</span>
+                </div>
 
-                  <p>
-                    Manage your website
-                  </p>
+                <span class="arrow">→</span>
+              </a>
+
+              <div class="quick-action disabled">
+                <div class="quick-icon">♢</div>
+
+                <div>
+                  <strong>Psychic listings</strong>
+                  <span>Coming soon</span>
                 </div>
               </div>
 
-              <div class="quick-actions">
+              <div class="quick-action disabled">
+                <div class="quick-icon">★</div>
 
-                <a
-                  href="${adminPath}/articles/new"
-                  class="quick-action"
-                >
-                  <div class="quick-icon">✎</div>
-
-                  <div>
-                    <strong>Write an article</strong>
-                    <span>Create new content</span>
-                  </div>
-
-                  <span class="arrow">→</span>
-                </a>
-
-                <a
-                  href="${adminPath}/articles"
-                  class="quick-action"
-                >
-                  <div class="quick-icon">☰</div>
-
-                  <div>
-                    <strong>Manage articles</strong>
-                    <span>Edit existing content</span>
-                  </div>
-
-                  <span class="arrow">→</span>
-                </a>
-
-                <div class="quick-action disabled">
-                  <div class="quick-icon">♢</div>
-
-                  <div>
-                    <strong>Psychic listings</strong>
-                    <span>Coming soon</span>
-                  </div>
+                <div>
+                  <strong>Reviews</strong>
+                  <span>Coming soon</span>
                 </div>
-
-                <div class="quick-action disabled">
-                  <div class="quick-icon">★</div>
-
-                  <div>
-                    <strong>Reviews</strong>
-                    <span>Coming soon</span>
-                  </div>
-                </div>
-
               </div>
 
-            </section>
+            </div>
 
-          </div>
+          </section>
+
+        </div>
         `
       ),
       {
@@ -557,8 +445,7 @@ async function adminDashboard(env, adminPath) {
     );
   } catch (error) {
     return new Response(
-      "Dashboard database error:\n\n" +
-        errorMessage(error),
+      "Dashboard database error:\n\n" + errorMessage(error),
       {
         status: 500,
         headers: {
@@ -576,43 +463,25 @@ async function adminDashboard(env, adminPath) {
 
 async function articlesPage(env, adminPath) {
   try {
-    const result = await env.DB.prepare(`
-      SELECT
-        id,
-        title,
-        slug,
-        featured_image,
-        category,
-        status,
-        created_at,
-        updated_at
-      FROM articles
-      ORDER BY updated_at DESC
-    `).all();
+    const result = await env.DB.prepare(
+      "SELECT id, title, slug, category, status, featured_image, created_at, updated_at FROM articles ORDER BY updated_at DESC"
+    ).all();
 
     let rows = "";
 
     for (const article of result.results || []) {
       rows += `
-        <tr>
+        <tr data-status="${escapeHtml(article.status || "draft")}">
 
           <td>
-
             <div class="article-title-cell">
 
               <div class="article-thumbnail">
-
                 ${
                   article.featured_image
-                    ? `
-                      <img
-                        src="${escapeHtml(article.featured_image)}"
-                        alt=""
-                      >
-                    `
+                    ? `<img src="${escapeHtml(article.featured_image)}" alt="">`
                     : "✦"
                 }
-
               </div>
 
               <div>
@@ -631,7 +500,6 @@ async function articlesPage(env, adminPath) {
               </div>
 
             </div>
-
           </td>
 
           <td>
@@ -692,20 +560,13 @@ async function articlesPage(env, adminPath) {
       rows = `
         <tr>
           <td colspan="5" class="empty">
-
             <div class="empty-state">
 
-              <div class="empty-icon">
-                ✦
-              </div>
+              <div class="empty-icon">✦</div>
 
-              <h3>
-                No articles yet
-              </h3>
+              <h3>No articles yet</h3>
 
-              <p>
-                Start building your Psychic Index content.
-              </p>
+              <p>Start building your Psychic Index content.</p>
 
               <a
                 class="primary-button"
@@ -715,7 +576,6 @@ async function articlesPage(env, adminPath) {
               </a>
 
             </div>
-
           </td>
         </tr>
       `;
@@ -727,131 +587,109 @@ async function articlesPage(env, adminPath) {
         "articles",
         adminPath,
         `
-          <div class="page-title-row">
+        <div class="page-title-row">
 
-            <div>
-              <div class="eyebrow">
-                CONTENT
-              </div>
+          <div>
+            <div class="eyebrow">CONTENT</div>
+            <h1>Articles</h1>
+            <p>Create and manage your Psychic Index content.</p>
+          </div>
 
-              <h1>Articles</h1>
+          <a
+            class="primary-button"
+            href="${adminPath}/articles/new"
+          >
+            <span>+</span>
+            New Article
+          </a>
 
-              <p>
-                Create and manage your Psychic Index content.
-              </p>
+        </div>
+
+        <section class="panel">
+
+          <div class="article-toolbar">
+
+            <div class="search-box">
+              <span>⌕</span>
+
+              <input
+                id="articleSearch"
+                type="search"
+                placeholder="Search articles..."
+                oninput="filterArticles()"
+              >
             </div>
 
-            <a
-              class="primary-button"
-              href="${adminPath}/articles/new"
+            <select
+              id="statusFilter"
+              onchange="filterArticles()"
             >
-              <span>+</span>
-              New Article
-            </a>
+              <option value="">All statuses</option>
+              <option value="published">Published</option>
+              <option value="draft">Draft</option>
+            </select>
 
           </div>
 
-          <section class="panel">
+          <div class="table-wrapper">
 
-            <div class="article-toolbar">
+            <table id="articlesTable">
 
-              <div class="search-box">
+              <thead>
+                <tr>
+                  <th>Article</th>
+                  <th>Category</th>
+                  <th>Status</th>
+                  <th>Updated</th>
+                  <th></th>
+                </tr>
+              </thead>
 
-                <span>⌕</span>
+              <tbody>
+                ${rows}
+              </tbody>
 
-                <input
-                  id="articleSearch"
-                  type="search"
-                  placeholder="Search articles..."
-                  oninput="filterArticles()"
-                >
+            </table>
 
-              </div>
+          </div>
 
-              <select
-                id="statusFilter"
-                onchange="filterArticles()"
-              >
-                <option value="">
-                  All statuses
-                </option>
+        </section>
 
-                <option value="published">
-                  Published
-                </option>
+        <script>
+          function filterArticles() {
+            const search = document
+              .getElementById("articleSearch")
+              .value
+              .toLowerCase();
 
-                <option value="draft">
-                  Draft
-                </option>
-              </select>
+            const status = document
+              .getElementById("statusFilter")
+              .value
+              .toLowerCase();
 
-            </div>
+            const rows = document.querySelectorAll(
+              "#articlesTable tbody tr"
+            );
 
-            <div class="table-wrapper">
+            rows.forEach(function(row) {
+              const text = row.innerText.toLowerCase();
+              const rowStatus = (
+                row.getAttribute("data-status") || ""
+              ).toLowerCase();
 
-              <table id="articlesTable">
+              const matchesSearch =
+                !search || text.includes(search);
 
-                <thead>
+              const matchesStatus =
+                !status || rowStatus === status;
 
-                  <tr>
-                    <th>Article</th>
-                    <th>Category</th>
-                    <th>Status</th>
-                    <th>Updated</th>
-                    <th></th>
-                  </tr>
-
-                </thead>
-
-                <tbody>
-                  ${rows}
-                </tbody>
-
-              </table>
-
-            </div>
-
-          </section>
-
-          <script>
-            function filterArticles() {
-              const search =
-                document
-                  .getElementById("articleSearch")
-                  .value
-                  .toLowerCase();
-
-              const status =
-                document
-                  .getElementById("statusFilter")
-                  .value
-                  .toLowerCase();
-
-              const rows =
-                document.querySelectorAll(
-                  "#articlesTable tbody tr"
-                );
-
-              rows.forEach(function(row) {
-                const text =
-                  row.innerText.toLowerCase();
-
-                const matchesSearch =
-                  !search ||
-                  text.includes(search);
-
-                const matchesStatus =
-                  !status ||
-                  text.includes(status);
-
-                row.style.display =
-                  matchesSearch &&
-                  matchesStatus
-                    ? ""
-                    : "none";
-              });
-            }
-          </script>
+              row.style.display =
+                matchesSearch && matchesStatus
+                  ? ""
+                  : "none";
+            });
+          }
+        </script>
         `
       ),
       {
@@ -862,8 +700,7 @@ async function articlesPage(env, adminPath) {
     );
   } catch (error) {
     return new Response(
-      "Articles database error:\n\n" +
-        errorMessage(error),
+      "Articles database error:\n\n" + errorMessage(error),
       {
         status: 500,
         headers: {
@@ -886,33 +723,26 @@ function newArticlePage(adminPath) {
       "articles",
       adminPath,
       `
-        <div class="page-title-row">
+      <div class="page-title-row">
 
-          <div>
-            <div class="eyebrow">
-              CONTENT
-            </div>
+        <div>
+          <div class="eyebrow">CONTENT</div>
 
-            <h1>New Article</h1>
+          <h1>New Article</h1>
 
-            <p>
-              Create a new article for Psychic Index.
-            </p>
-          </div>
-
-          <a
-            class="secondary-button"
-            href="${adminPath}/articles"
-          >
-            ← Back to Articles
-          </a>
-
+          <p>Create a new article for Psychic Index.</p>
         </div>
 
-        ${articleForm(
-          adminPath + "/articles/create",
-          null
-        )}
+        <a
+          class="secondary-button"
+          href="${adminPath}/articles"
+        >
+          ← Back to Articles
+        </a>
+
+      </div>
+
+      ${articleForm(adminPath + "/articles/create", null)}
       `
     ),
     {
@@ -932,35 +762,39 @@ async function createArticle(request, env, adminPath) {
   try {
     const form = await request.formData();
 
-    const title =
-      String(form.get("title") || "").trim();
+    const title = String(
+      form.get("title") || ""
+    ).trim();
 
-    const slug =
-      createSlug(
-        String(form.get("slug") || title)
-      );
+    const rawSlug = String(
+      form.get("slug") || title
+    );
 
-    const excerpt =
-      String(form.get("excerpt") || "").trim();
+    const slug = createSlug(rawSlug);
 
-    const content =
-      String(form.get("content") || "");
+    const excerpt = String(
+      form.get("excerpt") || ""
+    ).trim();
 
-    const category =
-      String(form.get("category") || "").trim();
+    const content = String(
+      form.get("content") || ""
+    );
 
-    const featuredImage =
-      String(
-        form.get("featured_image") || ""
-      ).trim();
+    const category = String(
+      form.get("category") || ""
+    ).trim();
 
-    const seoTitle =
-      String(form.get("seo_title") || "").trim();
+    const featuredImage = String(
+      form.get("featured_image") || ""
+    ).trim();
 
-    const seoDescription =
-      String(
-        form.get("seo_description") || ""
-      ).trim();
+    const seoTitle = String(
+      form.get("seo_title") || ""
+    ).trim();
+
+    const seoDescription = String(
+      form.get("seo_description") || ""
+    ).trim();
 
     const status =
       form.get("status") === "published"
@@ -981,19 +815,15 @@ async function createArticle(request, env, adminPath) {
       );
     }
 
-    const duplicate =
-      await env.DB.prepare(`
-        SELECT id
-        FROM articles
-        WHERE slug = ?
-        LIMIT 1
-      `)
-        .bind(slug)
-        .first();
+    const existing = await env.DB.prepare(
+      "SELECT id FROM articles WHERE slug = ? LIMIT 1"
+    )
+      .bind(slug)
+      .first();
 
-    if (duplicate) {
+    if (existing) {
       return new Response(
-        "An article already uses this slug.",
+        "An article already uses the slug: " + slug,
         { status: 409 }
       );
     }
@@ -1003,22 +833,9 @@ async function createArticle(request, env, adminPath) {
         ? new Date().toISOString()
         : null;
 
-    await env.DB.prepare(`
-      INSERT INTO articles
-      (
-        title,
-        slug,
-        excerpt,
-        content,
-        featured_image,
-        category,
-        seo_title,
-        seo_description,
-        status,
-        published_at
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `)
+    await env.DB.prepare(
+      "INSERT INTO articles (title, slug, excerpt, content, featured_image, category, seo_title, seo_description, status, published_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    )
       .bind(
         title,
         slug,
@@ -1042,8 +859,7 @@ async function createArticle(request, env, adminPath) {
     );
   } catch (error) {
     return new Response(
-      "Could not save article.\n\n" +
-        "DATABASE ERROR:\n\n" +
+      "Could not save article.\n\nDATABASE ERROR:\n\n" +
         errorMessage(error),
       {
         status: 500,
@@ -1062,15 +878,11 @@ async function createArticle(request, env, adminPath) {
 
 async function editArticlePage(env, adminPath, id) {
   try {
-    const article =
-      await env.DB.prepare(`
-        SELECT *
-        FROM articles
-        WHERE id = ?
-        LIMIT 1
-      `)
-        .bind(id)
-        .first();
+    const article = await env.DB.prepare(
+      "SELECT * FROM articles WHERE id = ? LIMIT 1"
+    )
+      .bind(id)
+      .first();
 
     if (!article) {
       return new Response(
@@ -1085,33 +897,29 @@ async function editArticlePage(env, adminPath, id) {
         "articles",
         adminPath,
         `
-          <div class="page-title-row">
+        <div class="page-title-row">
 
-            <div>
-              <div class="eyebrow">
-                CONTENT
-              </div>
+          <div>
+            <div class="eyebrow">CONTENT</div>
 
-              <h1>Edit Article</h1>
+            <h1>Edit Article</h1>
 
-              <p>
-                Update your article and SEO information.
-              </p>
-            </div>
-
-            <a
-              class="secondary-button"
-              href="${adminPath}/articles"
-            >
-              ← Back to Articles
-            </a>
-
+            <p>Update your article and SEO information.</p>
           </div>
 
-          ${articleForm(
-            adminPath + "/articles/update",
-            article
-          )}
+          <a
+            class="secondary-button"
+            href="${adminPath}/articles"
+          >
+            ← Back to Articles
+          </a>
+
+        </div>
+
+        ${articleForm(
+          adminPath + "/articles/update",
+          article
+        )}
         `
       ),
       {
@@ -1122,8 +930,7 @@ async function editArticlePage(env, adminPath, id) {
     );
   } catch (error) {
     return new Response(
-      "Could not load article.\n\n" +
-        "DATABASE ERROR:\n\n" +
+      "Could not load article.\n\nDATABASE ERROR:\n\n" +
         errorMessage(error),
       {
         status: 500,
@@ -1144,38 +951,41 @@ async function updateArticle(request, env, adminPath) {
   try {
     const form = await request.formData();
 
-    const id =
-      String(form.get("id") || "").trim();
+    const id = String(
+      form.get("id") || ""
+    ).trim();
 
-    const title =
-      String(form.get("title") || "").trim();
+    const title = String(
+      form.get("title") || ""
+    ).trim();
 
-    const slug =
-      createSlug(
-        String(form.get("slug") || title)
-      );
+    const slug = createSlug(
+      String(form.get("slug") || title)
+    );
 
-    const excerpt =
-      String(form.get("excerpt") || "").trim();
+    const excerpt = String(
+      form.get("excerpt") || ""
+    ).trim();
 
-    const content =
-      String(form.get("content") || "");
+    const content = String(
+      form.get("content") || ""
+    );
 
-    const category =
-      String(form.get("category") || "").trim();
+    const category = String(
+      form.get("category") || ""
+    ).trim();
 
-    const featuredImage =
-      String(
-        form.get("featured_image") || ""
-      ).trim();
+    const featuredImage = String(
+      form.get("featured_image") || ""
+    ).trim();
 
-    const seoTitle =
-      String(form.get("seo_title") || "").trim();
+    const seoTitle = String(
+      form.get("seo_title") || ""
+    ).trim();
 
-    const seoDescription =
-      String(
-        form.get("seo_description") || ""
-      ).trim();
+    const seoDescription = String(
+      form.get("seo_description") || ""
+    ).trim();
 
     const status =
       form.get("status") === "published"
@@ -1203,18 +1013,11 @@ async function updateArticle(request, env, adminPath) {
       );
     }
 
-    const existing =
-      await env.DB.prepare(`
-        SELECT
-          id,
-          slug,
-          published_at
-        FROM articles
-        WHERE id = ?
-        LIMIT 1
-      `)
-        .bind(id)
-        .first();
+    const existing = await env.DB.prepare(
+      "SELECT id, slug, published_at FROM articles WHERE id = ? LIMIT 1"
+    )
+      .bind(id)
+      .first();
 
     if (!existing) {
       return new Response(
@@ -1223,16 +1026,11 @@ async function updateArticle(request, env, adminPath) {
       );
     }
 
-    const duplicate =
-      await env.DB.prepare(`
-        SELECT id
-        FROM articles
-        WHERE slug = ?
-          AND id != ?
-        LIMIT 1
-      `)
-        .bind(slug, id)
-        .first();
+    const duplicate = await env.DB.prepare(
+      "SELECT id FROM articles WHERE slug = ? AND id != ? LIMIT 1"
+    )
+      .bind(slug, id)
+      .first();
 
     if (duplicate) {
       return new Response(
@@ -1247,52 +1045,38 @@ async function updateArticle(request, env, adminPath) {
       existing.published_at || null;
 
     if (status === "published" && !publishedAt) {
-      publishedAt =
-        new Date().toISOString();
+      publishedAt = new Date().toISOString();
     }
 
     if (status === "draft") {
       publishedAt = null;
     }
 
-    const result =
-      await env.DB.prepare(`
-        UPDATE articles
-        SET
-          title = ?,
-          slug = ?,
-          excerpt = ?,
-          content = ?,
-          featured_image = ?,
-          category = ?,
-          seo_title = ?,
-          seo_description = ?,
-          status = ?,
-          updated_at = CURRENT_TIMESTAMP,
-          published_at = ?
-        WHERE id = ?
-      `)
-        .bind(
-          title,
-          slug,
-          excerpt,
-          content,
-          featuredImage,
-          category,
-          seoTitle,
-          seoDescription,
-          status,
-          publishedAt,
-          id
-        )
-        .run();
+    const result = await env.DB.prepare(
+      "UPDATE articles SET title = ?, slug = ?, excerpt = ?, content = ?, featured_image = ?, category = ?, seo_title = ?, seo_description = ?, status = ?, updated_at = CURRENT_TIMESTAMP, published_at = ? WHERE id = ?"
+    )
+      .bind(
+        title,
+        slug,
+        excerpt,
+        content,
+        featuredImage,
+        category,
+        seoTitle,
+        seoDescription,
+        status,
+        publishedAt,
+        id
+      )
+      .run();
 
     if (
       result.meta &&
       result.meta.changes === 0
     ) {
       return new Response(
-        "Update ran but no database row was changed.",
+        "Update ran but no database row was changed.\n\nArticle ID: " +
+          id,
         { status: 500 }
       );
     }
@@ -1306,8 +1090,7 @@ async function updateArticle(request, env, adminPath) {
     );
   } catch (error) {
     return new Response(
-      "COULD NOT UPDATE ARTICLE.\n\n" +
-        "REAL DATABASE ERROR:\n\n" +
+      "COULD NOT UPDATE ARTICLE.\n\nREAL DATABASE ERROR:\n\n" +
         errorMessage(error),
       {
         status: 500,
@@ -1326,11 +1109,11 @@ async function updateArticle(request, env, adminPath) {
 
 async function deleteArticle(request, env, adminPath) {
   try {
-    const form =
-      await request.formData();
+    const form = await request.formData();
 
-    const id =
-      String(form.get("id") || "").trim();
+    const id = String(
+      form.get("id") || ""
+    ).trim();
 
     if (!id) {
       return new Response(
@@ -1339,10 +1122,9 @@ async function deleteArticle(request, env, adminPath) {
       );
     }
 
-    await env.DB.prepare(`
-      DELETE FROM articles
-      WHERE id = ?
-    `)
+    await env.DB.prepare(
+      "DELETE FROM articles WHERE id = ?"
+    )
       .bind(id)
       .run();
 
@@ -1381,336 +1163,278 @@ function articleForm(action, article) {
       ? "selected"
       : "";
 
+  const categorySelected = (category) =>
+    article?.category === category
+      ? "selected"
+      : "";
+
   return `
-    <form
-      method="POST"
-      action="${action}"
-      class="editor-layout"
-    >
+  <form
+    method="POST"
+    action="${action}"
+    class="editor-layout"
+  >
 
-      <div class="editor-main">
+    <div class="editor-main">
 
-        <section class="panel">
+      <section class="panel">
 
-          <div class="panel-header">
+        <div class="panel-header">
+          <div>
+            <h2>Article Content</h2>
+            <p>Write the main content of your article.</p>
+          </div>
+        </div>
 
-            <div>
-              <h2>Article Content</h2>
+        ${
+          article
+            ? `
+              <input
+                type="hidden"
+                name="id"
+                value="${escapeHtml(article.id)}"
+              >
+            `
+            : ""
+        }
 
-              <p>
-                Write the main content of your article.
-              </p>
-            </div>
+        <label for="title">Title</label>
 
+        <input
+          id="title"
+          name="title"
+          type="text"
+          value="${value("title")}"
+          placeholder="Enter your article title"
+          class="title-input"
+          required
+        >
+
+        <label for="slug">URL Slug</label>
+
+        <div class="slug-input">
+
+          <span>/articles/</span>
+
+          <input
+            id="slug"
+            name="slug"
+            type="text"
+            value="${value("slug")}"
+            placeholder="your-article-title"
+          >
+
+        </div>
+
+        <label for="excerpt">Excerpt</label>
+
+        <textarea
+          id="excerpt"
+          name="excerpt"
+          class="excerpt-input"
+          placeholder="Write a short introduction to your article..."
+        >${value("excerpt")}</textarea>
+
+        <label for="content">Content</label>
+
+        <textarea
+          id="content"
+          name="content"
+          class="content-editor"
+          placeholder="Start writing your article..."
+        >${value("content")}</textarea>
+
+      </section>
+
+
+      <section class="panel">
+
+        <div class="panel-header">
+
+          <div>
+            <h2>Search Engine Optimization</h2>
+
+            <p>
+              Help search engines understand your article.
+            </p>
           </div>
 
-          ${
-            article
-              ? `
-                <input
-                  type="hidden"
-                  name="id"
-                  value="${escapeHtml(article.id)}"
+          <div class="seo-badge">SEO</div>
+
+        </div>
+
+        <label for="seo_title">
+          SEO Title
+        </label>
+
+        <input
+          id="seo_title"
+          name="seo_title"
+          type="text"
+          value="${value("seo_title")}"
+          placeholder="SEO title"
+        >
+
+        <label for="seo_description">
+          SEO Description
+        </label>
+
+        <textarea
+          id="seo_description"
+          name="seo_description"
+          placeholder="Write a compelling description for search engines..."
+        >${value("seo_description")}</textarea>
+
+      </section>
+
+    </div>
+
+
+    <aside class="editor-sidebar">
+
+      <section class="panel">
+
+        <div class="panel-header">
+          <div>
+            <h2>Publish</h2>
+          </div>
+        </div>
+
+        <label for="status">
+          Status
+        </label>
+
+        <select id="status" name="status">
+
+          <option
+            value="draft"
+            ${selected("draft")}
+          >
+            Draft
+          </option>
+
+          <option
+            value="published"
+            ${selected("published")}
+          >
+            Published
+          </option>
+
+        </select>
+
+        <button
+          type="submit"
+          class="publish-button"
+        >
+          ${article ? "Update Article" : "Save Article"}
+        </button>
+
+      </section>
+
+
+      <section class="panel">
+
+        <div class="panel-header">
+          <div>
+            <h2>Category</h2>
+          </div>
+        </div>
+
+        <select id="category" name="category">
+
+          <option value="">
+            Uncategorized
+          </option>
+
+          <option
+            value="Psychic Readings"
+            ${categorySelected("Psychic Readings")}
+          >
+            Psychic Readings
+          </option>
+
+          <option
+            value="Psychic Websites"
+            ${categorySelected("Psychic Websites")}
+          >
+            Psychic Websites
+          </option>
+
+          <option
+            value="Astrology"
+            ${categorySelected("Astrology")}
+          >
+            Astrology
+          </option>
+
+          <option
+            value="Horoscopes"
+            ${categorySelected("Horoscopes")}
+          >
+            Horoscopes
+          </option>
+
+          <option
+            value="Spirituality"
+            ${categorySelected("Spirituality")}
+          >
+            Spirituality
+          </option>
+
+          <option
+            value="Reviews"
+            ${categorySelected("Reviews")}
+          >
+            Reviews
+          </option>
+
+        </select>
+
+      </section>
+
+
+      <section class="panel">
+
+        <div class="panel-header">
+
+          <div>
+            <h2>Featured Image</h2>
+
+            <p>
+              Add an image URL for now.
+            </p>
+          </div>
+
+        </div>
+
+        <input
+          id="featured_image"
+          name="featured_image"
+          type="text"
+          value="${value("featured_image")}"
+          placeholder="https://..."
+        >
+
+        ${
+          article?.featured_image
+            ? `
+              <div class="image-preview">
+
+                <img
+                  src="${escapeHtml(article.featured_image)}"
+                  alt=""
                 >
-              `
-              : ""
-          }
 
-          <label for="title">
-            Title
-          </label>
+              </div>
+            `
+            : ""
+        }
 
-          <input
-            id="title"
-            name="title"
-            type="text"
-            value="${value("title")}"
-            placeholder="Enter your article title"
-            class="title-input"
-            required
-          >
+      </section>
 
-          <label for="slug">
-            URL Slug
-          </label>
+    </aside>
 
-          <div class="slug-input">
-
-            <span>
-              /articles/
-            </span>
-
-            <input
-              id="slug"
-              name="slug"
-              type="text"
-              value="${value("slug")}"
-              placeholder="your-article-title"
-            >
-
-          </div>
-
-          <label for="excerpt">
-            Excerpt
-          </label>
-
-          <textarea
-            id="excerpt"
-            name="excerpt"
-            class="excerpt-input"
-            placeholder="Write a short introduction to your article..."
-          >${value("excerpt")}</textarea>
-
-          <label for="content">
-            Content
-          </label>
-
-          <textarea
-            id="content"
-            name="content"
-            class="content-editor"
-            placeholder="Start writing your article..."
-          >${value("content")}</textarea>
-
-        </section>
-
-
-        <section class="panel">
-
-          <div class="panel-header">
-
-            <div>
-              <h2>Search Engine Optimization</h2>
-
-              <p>
-                Help search engines understand your article.
-              </p>
-            </div>
-
-            <div class="seo-badge">
-              SEO
-            </div>
-
-          </div>
-
-          <label for="seo_title">
-            SEO Title
-          </label>
-
-          <input
-            id="seo_title"
-            name="seo_title"
-            type="text"
-            value="${value("seo_title")}"
-            placeholder="SEO title"
-          >
-
-          <label for="seo_description">
-            SEO Description
-          </label>
-
-          <textarea
-            id="seo_description"
-            name="seo_description"
-            placeholder="Write a compelling description for search engines..."
-          >${value("seo_description")}</textarea>
-
-        </section>
-
-      </div>
-
-
-      <aside class="editor-sidebar">
-
-        <section class="panel">
-
-          <div class="panel-header">
-
-            <div>
-              <h2>Publish</h2>
-            </div>
-
-          </div>
-
-          <label for="status">
-            Status
-          </label>
-
-          <select
-            id="status"
-            name="status"
-          >
-
-            <option
-              value="draft"
-              ${selected("draft")}
-            >
-              Draft
-            </option>
-
-            <option
-              value="published"
-              ${selected("published")}
-            >
-              Published
-            </option>
-
-          </select>
-
-          <button
-            type="submit"
-            class="publish-button"
-          >
-            ${
-              article
-                ? "Update Article"
-                : "Save Article"
-            }
-          </button>
-
-        </section>
-
-
-        <section class="panel">
-
-          <div class="panel-header">
-
-            <div>
-              <h2>Category</h2>
-            </div>
-
-          </div>
-
-          <label for="category">
-            Category
-          </label>
-
-          <select
-            id="category"
-            name="category"
-          >
-
-            <option value="">
-              Uncategorized
-            </option>
-
-            <option
-              value="Psychic Readings"
-              ${
-                article?.category === "Psychic Readings"
-                  ? "selected"
-                  : ""
-              }
-            >
-              Psychic Readings
-            </option>
-
-            <option
-              value="Psychic Websites"
-              ${
-                article?.category === "Psychic Websites"
-                  ? "selected"
-                  : ""
-              }
-            >
-              Psychic Websites
-            </option>
-
-            <option
-              value="Astrology"
-              ${
-                article?.category === "Astrology"
-                  ? "selected"
-                  : ""
-              }
-            >
-              Astrology
-            </option>
-
-            <option
-              value="Horoscopes"
-              ${
-                article?.category === "Horoscopes"
-                  ? "selected"
-                  : ""
-              }
-            >
-              Horoscopes
-            </option>
-
-            <option
-              value="Spirituality"
-              ${
-                article?.category === "Spirituality"
-                  ? "selected"
-                  : ""
-              }
-            >
-              Spirituality
-            </option>
-
-            <option
-              value="Reviews"
-              ${
-                article?.category === "Reviews"
-                  ? "selected"
-                  : ""
-              }
-            >
-              Reviews
-            </option>
-
-          </select>
-
-        </section>
-
-
-        <section class="panel">
-
-          <div class="panel-header">
-
-            <div>
-              <h2>Featured Image</h2>
-
-              <p>
-                Add an image URL for now.
-              </p>
-            </div>
-
-          </div>
-
-          <label for="featured_image">
-            Image URL
-          </label>
-
-          <input
-            id="featured_image"
-            name="featured_image"
-            type="text"
-            value="${value("featured_image")}"
-            placeholder="https://..."
-          >
-
-          ${
-            article?.featured_image
-              ? `
-                <div class="image-preview">
-
-                  <img
-                    src="${escapeHtml(article.featured_image)}"
-                    alt=""
-                  >
-
-                </div>
-              `
-              : ""
-          }
-
-        </section>
-
-      </aside>
-
-    </form>
+  </form>
   `;
 }
 
@@ -1719,7 +1443,12 @@ function articleForm(action, article) {
 // ADMIN LAYOUT
 // ==========================================
 
-function adminLayout(title, active, adminPath, content) {
+function adminLayout(
+  title,
+  active,
+  adminPath,
+  content
+) {
   return `
 <!DOCTYPE html>
 
@@ -1734,9 +1463,7 @@ function adminLayout(title, active, adminPath, content) {
   content="width=device-width, initial-scale=1.0"
 >
 
-<title>
-${escapeHtml(title)} — Psychic Index Admin
-</title>
+<title>${escapeHtml(title)} — Psychic Index Admin</title>
 
 <style>
 
@@ -1762,14 +1489,7 @@ ${escapeHtml(title)} — Psychic Index Admin
 
 body {
   margin: 0;
-  font-family:
-    Inter,
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: var(--bg);
   color: var(--text);
 }
@@ -1815,7 +1535,7 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg,#8b67d0,#6542a6);
+  background: linear-gradient(135deg, #8b67d0, #6542a6);
   font-size: 20px;
 }
 
@@ -1883,6 +1603,7 @@ a {
   margin-left: auto;
   font-size: 9px;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
   opacity: 0.55;
 }
 
@@ -2042,7 +1763,7 @@ p {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(3,1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 18px;
   margin-bottom: 22px;
 }
@@ -2095,7 +1816,7 @@ p {
 
 .content-grid {
   display: grid;
-  grid-template-columns: minmax(0,1.65fr) minmax(280px,0.75fr);
+  grid-template-columns: minmax(0, 1.65fr) minmax(280px, 0.75fr);
   gap: 22px;
 }
 
@@ -2131,6 +1852,7 @@ th {
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 1px;
+  font-weight: 650;
   background: #fcfbfd;
 }
 
@@ -2338,7 +2060,7 @@ td {
 
 .editor-layout {
   display: grid;
-  grid-template-columns: minmax(0,1fr) 320px;
+  grid-template-columns: minmax(0, 1fr) 320px;
   gap: 22px;
   align-items: start;
 }
@@ -2469,6 +2191,7 @@ select:focus {
   padding: 5px 7px;
   font-size: 9px;
   font-weight: 700;
+  letter-spacing: 0.7px;
 }
 
 .image-preview {
@@ -2515,7 +2238,6 @@ select:focus {
 }
 
 @media (max-width: 1050px) {
-
   .content-grid {
     grid-template-columns: 1fr;
   }
@@ -2527,13 +2249,11 @@ select:focus {
   .editor-sidebar {
     position: static;
     display: grid;
-    grid-template-columns: repeat(2,minmax(0,1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
 }
 
 @media (max-width: 800px) {
-
   .sidebar {
     width: 68px;
   }
@@ -2572,11 +2292,9 @@ select:focus {
   .content {
     padding: 28px 20px 50px;
   }
-
 }
 
 @media (max-width: 650px) {
-
   .welcome-row,
   .page-title-row {
     align-items: flex-start;
@@ -2611,7 +2329,6 @@ select:focus {
   h1 {
     font-size: 27px;
   }
-
 }
 
 </style>
@@ -2629,20 +2346,14 @@ select:focus {
       href="${adminPath}"
     >
 
-      <div class="brand-symbol">
-        ✦
-      </div>
+      <div class="brand-symbol">✦</div>
 
       <div>
-
-        <div class="brand-name">
-          Psychic Index
-        </div>
+        <div class="brand-name">Psychic Index</div>
 
         <span class="brand-subtitle">
           Administration
         </span>
-
       </div>
 
     </a>
@@ -2657,30 +2368,16 @@ select:focus {
         class="nav-link ${active === "dashboard" ? "active" : ""}"
         href="${adminPath}"
       >
-
-        <span class="nav-icon">
-          ⌂
-        </span>
-
-        <span>
-          Dashboard
-        </span>
-
+        <span class="nav-icon">⌂</span>
+        <span>Dashboard</span>
       </a>
 
       <a
         class="nav-link ${active === "articles" ? "active" : ""}"
         href="${adminPath}/articles"
       >
-
-        <span class="nav-icon">
-          ✎
-        </span>
-
-        <span>
-          Articles
-        </span>
-
+        <span class="nav-icon">✎</span>
+        <span>Articles</span>
       </a>
 
       <div class="nav-label" style="margin-top:24px;">
@@ -2688,35 +2385,15 @@ select:focus {
       </div>
 
       <div class="nav-link disabled">
-
-        <span class="nav-icon">
-          ♢
-        </span>
-
-        <span>
-          Psychics
-        </span>
-
-        <span class="coming">
-          Soon
-        </span>
-
+        <span class="nav-icon">♢</span>
+        <span>Psychics</span>
+        <span class="coming">Soon</span>
       </div>
 
       <div class="nav-link disabled">
-
-        <span class="nav-icon">
-          ★
-        </span>
-
-        <span>
-          Reviews
-        </span>
-
-        <span class="coming">
-          Soon
-        </span>
-
+        <span class="nav-icon">★</span>
+        <span>Reviews</span>
+        <span class="coming">Soon</span>
       </div>
 
       <div class="nav-label" style="margin-top:24px;">
@@ -2724,51 +2401,21 @@ select:focus {
       </div>
 
       <div class="nav-link disabled">
-
-        <span class="nav-icon">
-          ◈
-        </span>
-
-        <span>
-          Categories
-        </span>
-
-        <span class="coming">
-          Soon
-        </span>
-
+        <span class="nav-icon">◈</span>
+        <span>Categories</span>
+        <span class="coming">Soon</span>
       </div>
 
       <div class="nav-link disabled">
-
-        <span class="nav-icon">
-          ◫
-        </span>
-
-        <span>
-          Media
-        </span>
-
-        <span class="coming">
-          Soon
-        </span>
-
+        <span class="nav-icon">◫</span>
+        <span>Media</span>
+        <span class="coming">Soon</span>
       </div>
 
       <div class="nav-link disabled">
-
-        <span class="nav-icon">
-          ◌
-        </span>
-
-        <span>
-          SEO
-        </span>
-
-        <span class="coming">
-          Soon
-        </span>
-
+        <span class="nav-icon">◌</span>
+        <span>SEO</span>
+        <span class="coming">Soon</span>
       </div>
 
     </nav>
@@ -2779,20 +2426,14 @@ select:focus {
         class="site-link"
         href="/"
       >
-
-        <span>
-          ↗
-        </span>
-
-        <span>
-          View Website
-        </span>
-
+        <span>↗</span>
+        <span>View Website</span>
       </a>
 
     </div>
 
   </aside>
+
 
   <div class="main-area">
 
@@ -2820,6 +2461,7 @@ select:focus {
 
     </header>
 
+
     <main class="content">
 
       ${content}
@@ -2842,28 +2484,26 @@ select:focus {
 // ==========================================
 
 function articlePage(article) {
-  const title =
-    escapeHtml(article.title);
+  const title = escapeHtml(article.title);
 
-  const description =
-    escapeHtml(
-      article.seo_description ||
-        article.excerpt ||
-        ""
-    );
+  const description = escapeHtml(
+    article.seo_description ||
+      article.excerpt ||
+      ""
+  );
 
-  const seoTitle =
-    escapeHtml(
-      article.seo_title ||
-        article.title
-    );
+  const seoTitle = escapeHtml(
+    article.seo_title ||
+      article.title
+  );
 
-  const content =
-    escapeHtml(article.content || "")
-      .replace(/\n/g, "<br>");
+  const content = escapeHtml(
+    article.content || ""
+  ).replace(/\n/g, "<br>");
 
   return new Response(
-    `<!DOCTYPE html>
+    `
+<!DOCTYPE html>
 
 <html lang="en">
 
@@ -2887,78 +2527,67 @@ function articlePage(article) {
 
 body {
   margin: 0;
-  background: #f7f6fa;
+  font-family: system-ui, sans-serif;
+  background: #f8f7fa;
   color: #211c2b;
-  font-family:
-    Inter,
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
 }
 
 main {
-  max-width: 900px;
+  max-width: 850px;
   margin: 0 auto;
-  padding: 60px 24px;
+  padding: 60px 25px;
 }
 
 article {
   background: white;
-  padding: 45px;
-  border-radius: 18px;
-  border: 1px solid #e8e5ed;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 10px 35px rgba(0,0,0,0.05);
 }
 
 h1 {
   font-size: 42px;
   line-height: 1.15;
-  margin: 0 0 15px;
+  margin-top: 0;
 }
 
 .category {
   color: #6f4bb8;
-  font-size: 13px;
-  font-weight: 700;
-  margin-bottom: 25px;
+  font-weight: 600;
+  margin-bottom: 20px;
 }
 
 .featured-image {
   width: 100%;
   height: auto;
-  display: block;
   border-radius: 12px;
-  margin: 25px 0;
+  margin: 20px 0;
 }
 
 .excerpt {
   font-size: 18px;
-  line-height: 1.6;
-  color: #66606f;
-  margin-bottom: 30px;
+  color: #777181;
+  line-height: 1.7;
 }
 
 .article-content {
+  margin-top: 30px;
   font-size: 16px;
-  line-height: 1.8;
+  line-height: 1.9;
 }
 
-@media (max-width: 600px) {
-
+@media (max-width: 650px) {
   main {
-    padding: 20px 12px;
+    padding: 25px 15px;
   }
 
   article {
-    padding: 25px 20px;
+    padding: 25px;
   }
 
   h1 {
     font-size: 31px;
   }
-
 }
 
 </style>
@@ -2971,19 +2600,13 @@ h1 {
 
 <article>
 
-<h1>
-${title}
-</h1>
-
 ${
   article.category
-    ? `
-      <div class="category">
-        ${escapeHtml(article.category)}
-      </div>
-    `
+    ? `<div class="category">${escapeHtml(article.category)}</div>`
     : ""
 }
+
+<h1>${title}</h1>
 
 ${
   article.featured_image
@@ -3008,7 +2631,7 @@ ${
 }
 
 <div class="article-content">
-${content}
+  ${content}
 </div>
 
 </article>
@@ -3017,11 +2640,12 @@ ${content}
 
 </body>
 
-</html>`,
+</html>
+`,
     {
+      status: 200,
       headers: {
-        "Content-Type":
-          "text/html; charset=UTF-8"
+        "Content-Type": "text/html; charset=UTF-8"
       }
     }
   );
@@ -3033,7 +2657,7 @@ ${content}
 // ==========================================
 
 function createSlug(text) {
-  return text
+  return String(text)
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
@@ -3049,7 +2673,7 @@ function formatDate(value) {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
-    return value;
+    return String(value);
   }
 
   return date.toLocaleDateString(
