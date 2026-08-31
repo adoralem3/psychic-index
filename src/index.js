@@ -140,104 +140,113 @@ export default {
 // ==========================================
 
 async function adminDashboard(env, adminPath) {
-  const result = await env.DB.prepare(
-    `SELECT
-      COUNT(*) AS total,
-      SUM(
-        CASE
-          WHEN status = 'published' THEN 1
-          ELSE 0
-        END
-      ) AS published,
-      SUM(
-        CASE
-          WHEN status = 'draft' THEN 1
-          ELSE 0
-        END
-      ) AS drafts
-    FROM articles`
-  ).first();
+  try {
+    const result = await env.DB.prepare(
+      `SELECT
+        COUNT(*) AS total,
+        SUM(
+          CASE
+            WHEN status = 'published' THEN 1
+            ELSE 0
+          END
+        ) AS published,
+        SUM(
+          CASE
+            WHEN status = 'draft' THEN 1
+            ELSE 0
+          END
+        ) AS drafts
+      FROM articles`
+    ).first();
 
-  return new Response(
-    adminLayout(
-      "Admin Dashboard",
-      `
-      <h1>Admin Dashboard</h1>
+    return new Response(
+      adminLayout(
+        "Admin Dashboard",
+        `
+        <h1>Admin Dashboard</h1>
 
-      <p>
-        Welcome to Psychic Index.
-      </p>
+        <p>
+          Welcome to Psychic Index.
+        </p>
 
-      <div class="stats">
+        <div class="stats">
 
-        <div class="stat">
-          <strong>${result.total || 0}</strong>
-          <span>Total Articles</span>
+          <div class="stat">
+            <strong>${result.total || 0}</strong>
+            <span>Total Articles</span>
+          </div>
+
+          <div class="stat">
+            <strong>${result.published || 0}</strong>
+            <span>Published</span>
+          </div>
+
+          <div class="stat">
+            <strong>${result.drafts || 0}</strong>
+            <span>Drafts</span>
+          </div>
+
         </div>
 
-        <div class="stat">
-          <strong>${result.published || 0}</strong>
-          <span>Published</span>
+        <div class="grid">
+
+          <div class="card">
+            <h2>📝 Articles</h2>
+
+            <p>
+              Write, edit and manage your articles.
+            </p>
+
+            <a
+              class="button"
+              href="${adminPath}/articles"
+            >
+              Manage Articles
+            </a>
+          </div>
+
+          <div class="card">
+            <h2>🔮 Psychic Websites</h2>
+            <p>Coming next.</p>
+          </div>
+
+          <div class="card">
+            <h2>⭐ Reviews & Ratings</h2>
+            <p>Coming next.</p>
+          </div>
+
+          <div class="card">
+            <h2>🖼️ Media</h2>
+            <p>Coming next.</p>
+          </div>
+
+          <div class="card">
+            <h2>🏷️ Categories</h2>
+            <p>Coming next.</p>
+          </div>
+
+          <div class="card">
+            <h2>⚙️ SEO</h2>
+            <p>Coming next.</p>
+          </div>
+
         </div>
-
-        <div class="stat">
-          <strong>${result.drafts || 0}</strong>
-          <span>Drafts</span>
-        </div>
-
-      </div>
-
-      <div class="grid">
-
-        <div class="card">
-          <h2>📝 Articles</h2>
-
-          <p>
-            Write, edit and manage your articles.
-          </p>
-
-          <a
-            class="button"
-            href="${adminPath}/articles"
-          >
-            Manage Articles
-          </a>
-        </div>
-
-        <div class="card">
-          <h2>🔮 Psychic Websites</h2>
-          <p>Coming next.</p>
-        </div>
-
-        <div class="card">
-          <h2>⭐ Reviews & Ratings</h2>
-          <p>Coming next.</p>
-        </div>
-
-        <div class="card">
-          <h2>🖼️ Media</h2>
-          <p>Coming next.</p>
-        </div>
-
-        <div class="card">
-          <h2>🏷️ Categories</h2>
-          <p>Coming next.</p>
-        </div>
-
-        <div class="card">
-          <h2>⚙️ SEO</h2>
-          <p>Coming next.</p>
-        </div>
-
-      </div>
-      `
-    ),
-    {
-      headers: {
-        "Content-Type": "text/html; charset=UTF-8"
+        `
+      ),
+      {
+        headers: {
+          "Content-Type": "text/html; charset=UTF-8"
+        }
       }
-    }
-  );
+    );
+
+  } catch (error) {
+    return new Response(
+      "Dashboard database error: " +
+      errorMessage(error),
+      { status: 500 }
+    );
+  }
 }
 
 
@@ -246,153 +255,162 @@ async function adminDashboard(env, adminPath) {
 // ==========================================
 
 async function articlesPage(env, adminPath) {
-  const result = await env.DB.prepare(
-    `SELECT
-      id,
-      title,
-      slug,
-      category,
-      status,
-      created_at,
-      published_at
-    FROM articles
-    ORDER BY created_at DESC`
-  ).all();
+  try {
+    const result = await env.DB.prepare(
+      `SELECT
+        id,
+        title,
+        slug,
+        category,
+        status,
+        created_at,
+        published_at
+      FROM articles
+      ORDER BY created_at DESC`
+    ).all();
 
-  let rows = "";
+    let rows = "";
 
-  for (const article of result.results) {
-    const statusClass =
-      article.status === "published"
-        ? "published"
-        : "draft";
+    for (const article of result.results) {
+      const statusClass =
+        article.status === "published"
+          ? "published"
+          : "draft";
 
-    const date =
-      article.published_at ||
-      article.created_at ||
-      "";
+      const date =
+        article.published_at ||
+        article.created_at ||
+        "";
 
-    rows += `
-      <tr>
+      rows += `
+        <tr>
 
-        <td>
-          <strong>
-            ${escapeHtml(article.title)}
-          </strong>
-        </td>
+          <td>
+            <strong>
+              ${escapeHtml(article.title)}
+            </strong>
+          </td>
 
-        <td>
-          ${escapeHtml(article.category || "—")}
-        </td>
+          <td>
+            ${escapeHtml(article.category || "—")}
+          </td>
 
-        <td>
-          <span class="status ${statusClass}">
-            ${escapeHtml(article.status)}
-          </span>
-        </td>
+          <td>
+            <span class="status ${statusClass}">
+              ${escapeHtml(article.status)}
+            </span>
+          </td>
 
-        <td>
-          ${escapeHtml(formatDate(date))}
-        </td>
+          <td>
+            ${escapeHtml(formatDate(date))}
+          </td>
 
-        <td class="actions">
+          <td class="actions">
+
+            <a
+              class="small-button"
+              href="${adminPath}/articles/edit?id=${article.id}"
+            >
+              Edit
+            </a>
+
+            <form
+              method="POST"
+              action="${adminPath}/articles/delete"
+              onsubmit="return confirm('Delete this article?');"
+            >
+
+              <input
+                type="hidden"
+                name="id"
+                value="${article.id}"
+              >
+
+              <button
+                class="delete-button"
+                type="submit"
+              >
+                Delete
+              </button>
+
+            </form>
+
+          </td>
+
+        </tr>
+      `;
+    }
+
+    if (!rows) {
+      rows = `
+        <tr>
+          <td colspan="5">
+            No articles yet.
+          </td>
+        </tr>
+      `;
+    }
+
+    return new Response(
+      adminLayout(
+        "Articles",
+        `
+        <div class="page-header">
+
+          <div>
+            <h1>Articles</h1>
+
+            <p>
+              Manage your Psychic Index articles.
+            </p>
+          </div>
 
           <a
-            class="small-button"
-            href="${adminPath}/articles/edit?id=${article.id}"
+            class="button"
+            href="${adminPath}/articles/new"
           >
-            Edit
+            + New Article
           </a>
 
-          <form
-            method="POST"
-            action="${adminPath}/articles/delete"
-            onsubmit="return confirm('Delete this article?');"
-          >
-
-            <input
-              type="hidden"
-              name="id"
-              value="${article.id}"
-            >
-
-            <button
-              class="delete-button"
-              type="submit"
-            >
-              Delete
-            </button>
-
-          </form>
-
-        </td>
-
-      </tr>
-    `;
-  }
-
-  if (!rows) {
-    rows = `
-      <tr>
-        <td colspan="5">
-          No articles yet.
-        </td>
-      </tr>
-    `;
-  }
-
-  return new Response(
-    adminLayout(
-      "Articles",
-      `
-      <div class="page-header">
-
-        <div>
-          <h1>Articles</h1>
-
-          <p>
-            Manage your Psychic Index articles.
-          </p>
         </div>
 
-        <a
-          class="button"
-          href="${adminPath}/articles/new"
-        >
-          + New Article
-        </a>
+        <div class="table-card">
 
-      </div>
+          <table>
 
-      <div class="table-card">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
 
-        <table>
+            <tbody>
+              ${rows}
+            </tbody>
 
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>Category</th>
-              <th>Status</th>
-              <th>Date</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
+          </table>
 
-          <tbody>
-            ${rows}
-          </tbody>
-
-        </table>
-
-      </div>
-      `
-    ),
-    {
-      headers: {
-        "Content-Type": "text/html; charset=UTF-8"
+        </div>
+        `
+      ),
+      {
+        headers: {
+          "Content-Type": "text/html; charset=UTF-8"
+        }
       }
-    }
-  );
+    );
+
+  } catch (error) {
+    return new Response(
+      "Articles database error: " +
+      errorMessage(error),
+      { status: 500 }
+    );
+  }
 }
 
 
@@ -441,63 +459,63 @@ async function createArticle(
   env,
   adminPath
 ) {
-  const form = await request.formData();
-
-  const title =
-    String(form.get("title") || "").trim();
-
-  const slug =
-    createSlug(
-      String(form.get("slug") || title)
-    );
-
-  const excerpt =
-    String(form.get("excerpt") || "").trim();
-
-  const content =
-    String(form.get("content") || "");
-
-  const category =
-    String(form.get("category") || "").trim();
-
-  const featuredImage =
-    String(
-      form.get("featured_image") || ""
-    ).trim();
-
-  const seoTitle =
-    String(form.get("seo_title") || "").trim();
-
-  const seoDescription =
-    String(
-      form.get("seo_description") || ""
-    ).trim();
-
-  const status =
-    form.get("status") === "published"
-      ? "published"
-      : "draft";
-
-  if (!title) {
-    return new Response(
-      "Article title is required.",
-      { status: 400 }
-    );
-  }
-
-  if (!slug) {
-    return new Response(
-      "A valid URL slug is required.",
-      { status: 400 }
-    );
-  }
-
-  const publishedAt =
-    status === "published"
-      ? new Date().toISOString()
-      : null;
-
   try {
+    const form = await request.formData();
+
+    const title =
+      String(form.get("title") || "").trim();
+
+    const slug =
+      createSlug(
+        String(form.get("slug") || title)
+      );
+
+    const excerpt =
+      String(form.get("excerpt") || "").trim();
+
+    const content =
+      String(form.get("content") || "");
+
+    const category =
+      String(form.get("category") || "").trim();
+
+    const featuredImage =
+      String(
+        form.get("featured_image") || ""
+      ).trim();
+
+    const seoTitle =
+      String(form.get("seo_title") || "").trim();
+
+    const seoDescription =
+      String(
+        form.get("seo_description") || ""
+      ).trim();
+
+    const status =
+      form.get("status") === "published"
+        ? "published"
+        : "draft";
+
+    if (!title) {
+      return new Response(
+        "Article title is required.",
+        { status: 400 }
+      );
+    }
+
+    if (!slug) {
+      return new Response(
+        "A valid URL slug is required.",
+        { status: 400 }
+      );
+    }
+
+    const publishedAt =
+      status === "published"
+        ? new Date().toISOString()
+        : null;
+
     await env.DB.prepare(
       `INSERT INTO articles
       (
@@ -535,8 +553,15 @@ async function createArticle(
 
   } catch (error) {
     return new Response(
-      "Could not save article. That URL slug may already be in use.",
-      { status: 500 }
+      "Could not save article.\n\n" +
+      "DATABASE ERROR:\n" +
+      errorMessage(error),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "text/plain; charset=UTF-8"
+        }
+      }
     );
   }
 }
@@ -551,51 +576,66 @@ async function editArticlePage(
   adminPath,
   id
 ) {
-  const article =
-    await env.DB.prepare(
-      `SELECT *
-       FROM articles
-       WHERE id = ?
-       LIMIT 1`
-    )
-      .bind(id)
-      .first();
+  try {
+    const article =
+      await env.DB.prepare(
+        `SELECT *
+         FROM articles
+         WHERE id = ?
+         LIMIT 1`
+      )
+        .bind(id)
+        .first();
 
-  if (!article) {
+    if (!article) {
+      return new Response(
+        "Article not found.",
+        { status: 404 }
+      );
+    }
+
     return new Response(
-      "Article not found.",
-      { status: 404 }
-    );
-  }
+      adminLayout(
+        "Edit Article",
+        `
+        <div class="page-header">
 
-  return new Response(
-    adminLayout(
-      "Edit Article",
-      `
-      <div class="page-header">
+          <div>
+            <h1>Edit Article</h1>
 
-        <div>
-          <h1>Edit Article</h1>
+            <p>
+              Update your article.
+            </p>
+          </div>
 
-          <p>
-            Update your article.
-          </p>
         </div>
 
-      </div>
-
-      ${articleForm(
-        adminPath + "/articles/update",
-        article
-      )}
-      `
-    ),
-    {
-      headers: {
-        "Content-Type": "text/html; charset=UTF-8"
+        ${articleForm(
+          adminPath + "/articles/update",
+          article
+        )}
+        `
+      ),
+      {
+        headers: {
+          "Content-Type": "text/html; charset=UTF-8"
+        }
       }
-    }
-  );
+    );
+
+  } catch (error) {
+    return new Response(
+      "Could not load article.\n\n" +
+      "DATABASE ERROR:\n" +
+      errorMessage(error),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "text/plain; charset=UTF-8"
+        }
+      }
+    );
+  }
 }
 
 
@@ -608,140 +648,192 @@ async function updateArticle(
   env,
   adminPath
 ) {
-  const form = await request.formData();
-
-  const id =
-    String(form.get("id") || "").trim();
-
-  const title =
-    String(form.get("title") || "").trim();
-
-  const slug =
-    createSlug(
-      String(form.get("slug") || title)
-    );
-
-  const excerpt =
-    String(form.get("excerpt") || "").trim();
-
-  const content =
-    String(form.get("content") || "");
-
-  const category =
-    String(form.get("category") || "").trim();
-
-  const featuredImage =
-    String(
-      form.get("featured_image") || ""
-    ).trim();
-
-  const seoTitle =
-    String(form.get("seo_title") || "").trim();
-
-  const seoDescription =
-    String(
-      form.get("seo_description") || ""
-    ).trim();
-
-  const status =
-    form.get("status") === "published"
-      ? "published"
-      : "draft";
-
-  if (!id || !title || !slug) {
-    return new Response(
-      "Article information is incomplete.",
-      { status: 400 }
-    );
-  }
-
-  // Check that the article actually exists.
-
-  const existing =
-    await env.DB.prepare(
-      `SELECT
-        id,
-        published_at
-       FROM articles
-       WHERE id = ?
-       LIMIT 1`
-    )
-      .bind(id)
-      .first();
-
-  if (!existing) {
-    return new Response(
-      "Article not found.",
-      { status: 404 }
-    );
-  }
-
-  // Make sure another article does not
-  // already use this slug.
-
-  const duplicate =
-    await env.DB.prepare(
-      `SELECT id
-       FROM articles
-       WHERE slug = ?
-       AND id != ?
-       LIMIT 1`
-    )
-      .bind(slug, id)
-      .first();
-
-  if (duplicate) {
-    return new Response(
-      "Another article already uses this URL slug.",
-      { status: 409 }
-    );
-  }
-
-  let publishedAt =
-    existing.published_at || null;
-
-  if (
-    status === "published" &&
-    !publishedAt
-  ) {
-    publishedAt =
-      new Date().toISOString();
-  }
-
-  if (status === "draft") {
-    publishedAt = null;
-  }
-
   try {
-    await env.DB.prepare(
-      `UPDATE articles
-       SET
-         title = ?,
-         slug = ?,
-         excerpt = ?,
-         content = ?,
-         featured_image = ?,
-         category = ?,
-         seo_title = ?,
-         seo_description = ?,
-         status = ?,
-         published_at = ?
-       WHERE id = ?`
-    )
-      .bind(
-        title,
-        slug,
-        excerpt,
-        content,
-        featuredImage,
-        category,
-        seoTitle,
-        seoDescription,
-        status,
-        publishedAt,
-        id
+    const form = await request.formData();
+
+    const id =
+      String(form.get("id") || "").trim();
+
+    const title =
+      String(form.get("title") || "").trim();
+
+    const slug =
+      createSlug(
+        String(form.get("slug") || title)
+      );
+
+    const excerpt =
+      String(form.get("excerpt") || "").trim();
+
+    const content =
+      String(form.get("content") || "");
+
+    const category =
+      String(form.get("category") || "").trim();
+
+    const featuredImage =
+      String(
+        form.get("featured_image") || ""
+      ).trim();
+
+    const seoTitle =
+      String(form.get("seo_title") || "").trim();
+
+    const seoDescription =
+      String(
+        form.get("seo_description") || ""
+      ).trim();
+
+    const status =
+      form.get("status") === "published"
+        ? "published"
+        : "draft";
+
+    // ------------------------------------------
+    // BASIC VALIDATION
+    // ------------------------------------------
+
+    if (!id) {
+      return new Response(
+        "Update error: Article ID is missing.",
+        { status: 400 }
+      );
+    }
+
+    if (!title) {
+      return new Response(
+        "Update error: Article title is missing.",
+        { status: 400 }
+      );
+    }
+
+    if (!slug) {
+      return new Response(
+        "Update error: Article slug is missing.",
+        { status: 400 }
+      );
+    }
+
+    // ------------------------------------------
+    // FIND EXISTING ARTICLE
+    // ------------------------------------------
+
+    const existing =
+      await env.DB.prepare(
+        `SELECT
+          id,
+          slug,
+          published_at
+         FROM articles
+         WHERE id = ?
+         LIMIT 1`
       )
-      .run();
+        .bind(id)
+        .first();
+
+    if (!existing) {
+      return new Response(
+        "Update error: Article ID " +
+        id +
+        " was not found in the database.",
+        { status: 404 }
+      );
+    }
+
+    // ------------------------------------------
+    // CHECK SLUG
+    // ------------------------------------------
+
+    const duplicate =
+      await env.DB.prepare(
+        `SELECT id
+         FROM articles
+         WHERE slug = ?
+         AND id != ?
+         LIMIT 1`
+      )
+        .bind(slug, id)
+        .first();
+
+    if (duplicate) {
+      return new Response(
+        "Update error: Another article already uses the slug '" +
+        slug +
+        "'.",
+        { status: 409 }
+      );
+    }
+
+    // ------------------------------------------
+    // PUBLISHED DATE
+    // ------------------------------------------
+
+    let publishedAt =
+      existing.published_at || null;
+
+    if (
+      status === "published" &&
+      !publishedAt
+    ) {
+      publishedAt =
+        new Date().toISOString();
+    }
+
+    if (status === "draft") {
+      publishedAt = null;
+    }
+
+    // ------------------------------------------
+    // UPDATE
+    // ------------------------------------------
+
+    const result =
+      await env.DB.prepare(
+        `UPDATE articles
+         SET
+           title = ?,
+           slug = ?,
+           excerpt = ?,
+           content = ?,
+           featured_image = ?,
+           category = ?,
+           seo_title = ?,
+           seo_description = ?,
+           status = ?,
+           updated_at = CURRENT_TIMESTAMP,
+           published_at = ?
+         WHERE id = ?`
+      )
+        .bind(
+          title,
+          slug,
+          excerpt,
+          content,
+          featuredImage,
+          category,
+          seoTitle,
+          seoDescription,
+          status,
+          publishedAt,
+          id
+        )
+        .run();
+
+    // ------------------------------------------
+    // CONFIRM UPDATE
+    // ------------------------------------------
+
+    if (
+      result.meta &&
+      result.meta.changes === 0
+    ) {
+      return new Response(
+        "Update ran but no database row was changed.\n\n" +
+        "Article ID: " +
+        id,
+        { status: 500 }
+      );
+    }
 
     return Response.redirect(
       adminPath + "/articles",
@@ -750,8 +842,18 @@ async function updateArticle(
 
   } catch (error) {
     return new Response(
-      "Could not update the article. Please try again.",
-      { status: 500 }
+      "COULD NOT UPDATE ARTICLE.\n\n" +
+      "REAL DATABASE ERROR:\n\n" +
+      errorMessage(error) +
+      "\n\n" +
+      "This message is intentionally shown so we can fix the exact problem.",
+      {
+        status: 500,
+        headers: {
+          "Content-Type":
+            "text/plain; charset=UTF-8"
+        }
+      }
     );
   }
 }
@@ -766,29 +868,44 @@ async function deleteArticle(
   env,
   adminPath
 ) {
-  const form =
-    await request.formData();
+  try {
+    const form =
+      await request.formData();
 
-  const id =
-    String(form.get("id") || "").trim();
+    const id =
+      String(form.get("id") || "").trim();
 
-  if (!id) {
+    if (!id) {
+      return new Response(
+        "Article ID is missing.",
+        { status: 400 }
+      );
+    }
+
+    await env.DB.prepare(
+      "DELETE FROM articles WHERE id = ?"
+    )
+      .bind(id)
+      .run();
+
+    return Response.redirect(
+      adminPath + "/articles",
+      303
+    );
+
+  } catch (error) {
     return new Response(
-      "Article ID is missing.",
-      { status: 400 }
+      "Could not delete article.\n\n" +
+      errorMessage(error),
+      {
+        status: 500,
+        headers: {
+          "Content-Type":
+            "text/plain; charset=UTF-8"
+        }
+      }
     );
   }
-
-  await env.DB.prepare(
-    "DELETE FROM articles WHERE id = ?"
-  )
-    .bind(id)
-    .run();
-
-  return Response.redirect(
-    adminPath + "/articles",
-    303
-  );
 }
 
 
@@ -1489,6 +1606,23 @@ function formatDate(value) {
       day: "numeric"
     }
   );
+}
+
+
+// ==========================================
+// ERROR MESSAGE
+// ==========================================
+
+function errorMessage(error) {
+  if (!error) {
+    return "Unknown error";
+  }
+
+  if (error.message) {
+    return error.message;
+  }
+
+  return String(error);
 }
 
 
