@@ -34,7 +34,7 @@ export default {
     }
 
     // ==========================================
-    // ALL ARTICLES
+    // ARTICLES
     // ==========================================
 
     if (url.pathname === adminPath + "/articles") {
@@ -45,9 +45,7 @@ export default {
     // NEW ARTICLE
     // ==========================================
 
-    if (
-      url.pathname === adminPath + "/articles/new"
-    ) {
+    if (url.pathname === adminPath + "/articles/new") {
       return newArticlePage(adminPath);
     }
 
@@ -59,34 +57,23 @@ export default {
       url.pathname === adminPath + "/articles/create" &&
       request.method === "POST"
     ) {
-      return await createArticle(
-        request,
-        env,
-        adminPath
-      );
+      return await createArticle(request, env, adminPath);
     }
 
     // ==========================================
     // EDIT ARTICLE
     // ==========================================
 
-    if (
-      url.pathname === adminPath + "/articles/edit"
-    ) {
+    if (url.pathname === adminPath + "/articles/edit") {
       const id = url.searchParams.get("id");
 
       if (!id) {
-        return new Response(
-          "Article ID is missing.",
-          { status: 400 }
-        );
+        return new Response("Article ID is missing.", {
+          status: 400
+        });
       }
 
-      return await editArticlePage(
-        env,
-        adminPath,
-        id
-      );
+      return await editArticlePage(env, adminPath, id);
     }
 
     // ==========================================
@@ -97,11 +84,7 @@ export default {
       url.pathname === adminPath + "/articles/update" &&
       request.method === "POST"
     ) {
-      return await updateArticle(
-        request,
-        env,
-        adminPath
-      );
+      return await updateArticle(request, env, adminPath);
     }
 
     // ==========================================
@@ -112,41 +95,32 @@ export default {
       url.pathname === adminPath + "/articles/delete" &&
       request.method === "POST"
     ) {
-      return await deleteArticle(
-        request,
-        env,
-        adminPath
-      );
+      return await deleteArticle(request, env, adminPath);
     }
 
     // ==========================================
     // PUBLIC ARTICLE
     // ==========================================
 
-    if (
-      url.pathname.startsWith("/articles/")
-    ) {
-      const slug =
-        url.pathname
-          .replace("/articles/", "")
-          .replace(/\/$/, "");
+    if (url.pathname.startsWith("/articles/")) {
+      const slug = url.pathname
+        .replace("/articles/", "")
+        .replace(/\/$/, "");
 
-      const article =
-        await env.DB.prepare(
-          `SELECT *
-           FROM articles
-           WHERE slug = ?
-           AND status = 'published'
-           LIMIT 1`
-        )
-          .bind(slug)
-          .first();
+      const article = await env.DB.prepare(
+        `SELECT *
+         FROM articles
+         WHERE slug = ?
+         AND status = 'published'
+         LIMIT 1`
+      )
+        .bind(slug)
+        .first();
 
       if (!article) {
-        return new Response(
-          "Article not found.",
-          { status: 404 }
-        );
+        return new Response("Article not found.", {
+          status: 404
+        });
       }
 
       return articlePage(article);
@@ -165,30 +139,24 @@ export default {
 // ADMIN DASHBOARD
 // ==========================================
 
-async function adminDashboard(
-  env,
-  adminPath
-) {
-  const result =
-    await env.DB.prepare(
-      `SELECT
-        COUNT(*) AS total,
-        SUM(
-          CASE
-            WHEN status = 'published'
-            THEN 1
-            ELSE 0
-          END
-        ) AS published,
-        SUM(
-          CASE
-            WHEN status = 'draft'
-            THEN 1
-            ELSE 0
-          END
-        ) AS drafts
-       FROM articles`
-    ).first();
+async function adminDashboard(env, adminPath) {
+  const result = await env.DB.prepare(
+    `SELECT
+      COUNT(*) AS total,
+      SUM(
+        CASE
+          WHEN status = 'published' THEN 1
+          ELSE 0
+        END
+      ) AS published,
+      SUM(
+        CASE
+          WHEN status = 'draft' THEN 1
+          ELSE 0
+        END
+      ) AS drafts
+    FROM articles`
+  ).first();
 
   return new Response(
     adminLayout(
@@ -222,9 +190,7 @@ async function adminDashboard(
       <div class="grid">
 
         <div class="card">
-
           <h2>📝 Articles</h2>
-
           <p>
             Write, edit and manage your articles.
           </p>
@@ -235,57 +201,31 @@ async function adminDashboard(
           >
             Manage Articles
           </a>
-
         </div>
 
         <div class="card">
-
           <h2>🔮 Psychic Websites</h2>
-
-          <p>
-            Coming next.
-          </p>
-
+          <p>Coming next.</p>
         </div>
 
         <div class="card">
-
           <h2>⭐ Reviews & Ratings</h2>
-
-          <p>
-            Coming next.
-          </p>
-
+          <p>Coming next.</p>
         </div>
 
         <div class="card">
-
           <h2>🖼️ Media</h2>
-
-          <p>
-            Coming next.
-          </p>
-
+          <p>Coming next.</p>
         </div>
 
         <div class="card">
-
           <h2>🏷️ Categories</h2>
-
-          <p>
-            Coming next.
-          </p>
-
+          <p>Coming next.</p>
         </div>
 
         <div class="card">
-
           <h2>⚙️ SEO</h2>
-
-          <p>
-            Coming next.
-          </p>
-
+          <p>Coming next.</p>
         </div>
 
       </div>
@@ -293,8 +233,7 @@ async function adminDashboard(
     ),
     {
       headers: {
-        "Content-Type":
-          "text/html; charset=UTF-8"
+        "Content-Type": "text/html; charset=UTF-8"
       }
     }
   );
@@ -305,28 +244,23 @@ async function adminDashboard(
 // ARTICLES LIST
 // ==========================================
 
-async function articlesPage(
-  env,
-  adminPath
-) {
-  const result =
-    await env.DB.prepare(
-      `SELECT
-        id,
-        title,
-        slug,
-        category,
-        status,
-        created_at,
-        published_at
-       FROM articles
-       ORDER BY created_at DESC`
-    ).all();
+async function articlesPage(env, adminPath) {
+  const result = await env.DB.prepare(
+    `SELECT
+      id,
+      title,
+      slug,
+      category,
+      status,
+      created_at,
+      published_at
+    FROM articles
+    ORDER BY created_at DESC`
+  ).all();
 
   let rows = "";
 
   for (const article of result.results) {
-
     const statusClass =
       article.status === "published"
         ? "published"
@@ -347,9 +281,7 @@ async function articlesPage(
         </td>
 
         <td>
-          ${escapeHtml(
-            article.category || "—"
-          )}
+          ${escapeHtml(article.category || "—")}
         </td>
 
         <td>
@@ -359,9 +291,7 @@ async function articlesPage(
         </td>
 
         <td>
-          ${escapeHtml(
-            formatDate(date)
-          )}
+          ${escapeHtml(formatDate(date))}
         </td>
 
         <td class="actions">
@@ -417,13 +347,11 @@ async function articlesPage(
       <div class="page-header">
 
         <div>
-
           <h1>Articles</h1>
 
           <p>
             Manage your Psychic Index articles.
           </p>
-
         </div>
 
         <a
@@ -440,7 +368,6 @@ async function articlesPage(
         <table>
 
           <thead>
-
             <tr>
               <th>Title</th>
               <th>Category</th>
@@ -448,13 +375,10 @@ async function articlesPage(
               <th>Date</th>
               <th>Actions</th>
             </tr>
-
           </thead>
 
           <tbody>
-
             ${rows}
-
           </tbody>
 
         </table>
@@ -464,8 +388,7 @@ async function articlesPage(
     ),
     {
       headers: {
-        "Content-Type":
-          "text/html; charset=UTF-8"
+        "Content-Type": "text/html; charset=UTF-8"
       }
     }
   );
@@ -473,11 +396,10 @@ async function articlesPage(
 
 
 // ==========================================
-// NEW ARTICLE PAGE
+// NEW ARTICLE
 // ==========================================
 
 function newArticlePage(adminPath) {
-
   return new Response(
     adminLayout(
       "New Article",
@@ -485,13 +407,11 @@ function newArticlePage(adminPath) {
       <div class="page-header">
 
         <div>
-
           <h1>New Article</h1>
 
           <p>
             Create a new Psychic Index article.
           </p>
-
         </div>
 
       </div>
@@ -504,8 +424,7 @@ function newArticlePage(adminPath) {
     ),
     {
       headers: {
-        "Content-Type":
-          "text/html; charset=UTF-8"
+        "Content-Type": "text/html; charset=UTF-8"
       }
     }
   );
@@ -521,35 +440,24 @@ async function createArticle(
   env,
   adminPath
 ) {
-  const form =
-    await request.formData();
+  const form = await request.formData();
 
   const title =
-    String(
-      form.get("title") || ""
-    ).trim();
+    String(form.get("title") || "").trim();
 
   const slug =
     createSlug(
-      String(
-        form.get("slug") || title
-      )
+      String(form.get("slug") || title)
     );
 
   const excerpt =
-    String(
-      form.get("excerpt") || ""
-    ).trim();
+    String(form.get("excerpt") || "").trim();
 
   const content =
-    String(
-      form.get("content") || ""
-    );
+    String(form.get("content") || "");
 
   const category =
-    String(
-      form.get("category") || ""
-    ).trim();
+    String(form.get("category") || "").trim();
 
   const featuredImage =
     String(
@@ -557,9 +465,7 @@ async function createArticle(
     ).trim();
 
   const seoTitle =
-    String(
-      form.get("seo_title") || ""
-    ).trim();
+    String(form.get("seo_title") || "").trim();
 
   const seoDescription =
     String(
@@ -578,13 +484,19 @@ async function createArticle(
     );
   }
 
+  if (!slug) {
+    return new Response(
+      "A valid URL slug is required.",
+      { status: 400 }
+    );
+  }
+
   const publishedAt =
     status === "published"
       ? new Date().toISOString()
       : null;
 
   try {
-
     await env.DB.prepare(
       `INSERT INTO articles
       (
@@ -621,9 +533,8 @@ async function createArticle(
     );
 
   } catch (error) {
-
     return new Response(
-      "Could not save article. The slug may already exist.",
+      "Could not save article. That URL slug may already be in use.",
       { status: 500 }
     );
   }
@@ -663,13 +574,11 @@ async function editArticlePage(
       <div class="page-header">
 
         <div>
-
           <h1>Edit Article</h1>
 
           <p>
             Update your article.
           </p>
-
         </div>
 
       </div>
@@ -682,8 +591,7 @@ async function editArticlePage(
     ),
     {
       headers: {
-        "Content-Type":
-          "text/html; charset=UTF-8"
+        "Content-Type": "text/html; charset=UTF-8"
       }
     }
   );
@@ -699,40 +607,27 @@ async function updateArticle(
   env,
   adminPath
 ) {
-  const form =
-    await request.formData();
+  const form = await request.formData();
 
   const id =
-    String(
-      form.get("id") || ""
-    );
+    String(form.get("id") || "");
 
   const title =
-    String(
-      form.get("title") || ""
-    ).trim();
+    String(form.get("title") || "").trim();
 
   const slug =
     createSlug(
-      String(
-        form.get("slug") || title
-      )
+      String(form.get("slug") || title)
     );
 
   const excerpt =
-    String(
-      form.get("excerpt") || ""
-    ).trim();
+    String(form.get("excerpt") || "").trim();
 
   const content =
-    String(
-      form.get("content") || ""
-    );
+    String(form.get("content") || "");
 
   const category =
-    String(
-      form.get("category") || ""
-    ).trim();
+    String(form.get("category") || "").trim();
 
   const featuredImage =
     String(
@@ -740,9 +635,7 @@ async function updateArticle(
     ).trim();
 
   const seoTitle =
-    String(
-      form.get("seo_title") || ""
-    ).trim();
+    String(form.get("seo_title") || "").trim();
 
   const seoDescription =
     String(
@@ -754,10 +647,34 @@ async function updateArticle(
       ? "published"
       : "draft";
 
-  if (!id || !title) {
+  if (!id || !title || !slug) {
     return new Response(
       "Article information is incomplete.",
       { status: 400 }
+    );
+  }
+
+  // ------------------------------------------
+  // IMPORTANT:
+  // Check whether another article already
+  // owns this slug.
+  // ------------------------------------------
+
+  const duplicate =
+    await env.DB.prepare(
+      `SELECT id
+       FROM articles
+       WHERE slug = ?
+       AND id != ?
+       LIMIT 1`
+    )
+      .bind(slug, id)
+      .first();
+
+  if (duplicate) {
+    return new Response(
+      "Could not update article. Another article already uses this URL slug.",
+      { status: 409 }
     );
   }
 
@@ -771,8 +688,15 @@ async function updateArticle(
       .bind(id)
       .first();
 
+  if (!existing) {
+    return new Response(
+      "Article not found.",
+      { status: 404 }
+    );
+  }
+
   let publishedAt =
-    existing?.published_at || null;
+    existing.published_at || null;
 
   if (
     status === "published" &&
@@ -787,7 +711,6 @@ async function updateArticle(
   }
 
   try {
-
     await env.DB.prepare(
       `UPDATE articles
        SET
@@ -825,9 +748,8 @@ async function updateArticle(
     );
 
   } catch (error) {
-
     return new Response(
-      "Could not update article. The slug may already exist.",
+      "Could not update the article. Please try again.",
       { status: 500 }
     );
   }
@@ -847,9 +769,7 @@ async function deleteArticle(
     await request.formData();
 
   const id =
-    String(
-      form.get("id") || ""
-    );
+    String(form.get("id") || "");
 
   if (!id) {
     return new Response(
@@ -875,21 +795,16 @@ async function deleteArticle(
 // ARTICLE FORM
 // ==========================================
 
-function articleForm(
-  action,
-  article
-) {
-  const value =
-    (field) =>
-      escapeHtml(
-        article?.[field] || ""
-      );
+function articleForm(action, article) {
+  const value = (field) =>
+    escapeHtml(
+      article?.[field] || ""
+    );
 
-  const selected =
-    (status) =>
-      article?.status === status
-        ? "selected"
-        : "";
+  const selected = (status) =>
+    article?.status === status
+      ? "selected"
+      : "";
 
   return `
   <div class="form-card">
@@ -1075,10 +990,12 @@ function articleForm(
 
       <div class="form-buttons">
 
-        <button
-          type="submit"
-        >
-          ${article ? "Update Article" : "Save Article"}
+        <button type="submit">
+          ${
+            article
+              ? "Update Article"
+              : "Save Article"
+          }
         </button>
 
       </div>
@@ -1094,10 +1011,7 @@ function articleForm(
 // ADMIN LAYOUT
 // ==========================================
 
-function adminLayout(
-  title,
-  content
-) {
+function adminLayout(title, content) {
   return `
 <!DOCTYPE html>
 
@@ -1136,8 +1050,7 @@ body {
 header {
   background: white;
   padding: 22px 30px;
-  border-bottom:
-    1px solid #ddd;
+  border-bottom: 1px solid #ddd;
 }
 
 header a {
@@ -1252,8 +1165,7 @@ th,
 td {
   padding: 16px;
   text-align: left;
-  border-bottom:
-    1px solid #eee;
+  border-bottom: 1px solid #eee;
 }
 
 th {
@@ -1322,8 +1234,7 @@ textarea,
 select {
   width: 100%;
   padding: 13px;
-  border:
-    1px solid #ddd;
+  border: 1px solid #ddd;
   border-radius: 8px;
   font-size: 16px;
   font-family: inherit;
@@ -1390,7 +1301,6 @@ ${content}
 // ==========================================
 
 function articlePage(article) {
-
   const title =
     escapeHtml(article.title);
 
@@ -1487,8 +1397,7 @@ ${content}
 
     {
       headers: {
-        "Content-Type":
-          "text/html; charset=UTF-8"
+        "Content-Type": "text/html; charset=UTF-8"
       }
     }
   );
@@ -1496,36 +1405,30 @@ ${content}
 
 
 // ==========================================
-// SLUG
+// SLUG GENERATOR
 // ==========================================
 
 function createSlug(text) {
-
   return text
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
-
 }
 
 
 // ==========================================
-// DATE
+// DATE FORMAT
 // ==========================================
 
 function formatDate(value) {
-
   if (!value) {
     return "—";
   }
 
-  const date =
-    new Date(value);
+  const date = new Date(value);
 
-  if (Number.isNaN(
-    date.getTime()
-  )) {
+  if (Number.isNaN(date.getTime())) {
     return value;
   }
 
@@ -1545,12 +1448,10 @@ function formatDate(value) {
 // ==========================================
 
 function escapeHtml(value) {
-
   return String(value)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
-
 }
