@@ -11,7 +11,10 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // Database health check
+    // --------------------------------
+    // API HEALTH CHECK
+    // --------------------------------
+
     if (url.pathname === "/api/health") {
       let database = "connected";
 
@@ -26,17 +29,27 @@ export default {
         site: "Psychic Index",
         database
       });
-if (
-  url.pathname === "/admin/login" &&
-  request.method === "GET"
-) {
-  return env.ASSETS.fetch(
-    new Request(
-      new URL("/admin-login.html", request.url)
-    )
-  );
-}
-    // Admin login submission
+    }
+
+    // --------------------------------
+    // ADMIN LOGIN PAGE
+    // --------------------------------
+
+    if (
+      url.pathname === "/admin/login" &&
+      request.method === "GET"
+    ) {
+      return env.ASSETS.fetch(
+        new Request(
+          new URL("/admin-login.html", request.url)
+        )
+      );
+    }
+
+    // --------------------------------
+    // ADMIN LOGIN
+    // --------------------------------
+
     if (
       url.pathname === "/admin/login" &&
       request.method === "POST"
@@ -45,7 +58,9 @@ if (
 
       const email = String(
         formData.get("email") || ""
-      ).trim().toLowerCase();
+      )
+        .trim()
+        .toLowerCase();
 
       const password = String(
         formData.get("password") || ""
@@ -67,13 +82,20 @@ if (
         .bind(email)
         .first();
 
-      if (
-        !admin ||
-        !(await verifyPassword(
+      if (!admin) {
+        return Response.redirect(
+          `${url.origin}/admin/login?error=1`,
+          303
+        );
+      }
+
+      const passwordIsValid =
+        await verifyPassword(
           password,
           admin.password_hash
-        ))
-      ) {
+        );
+
+      if (!passwordIsValid) {
         return Response.redirect(
           `${url.origin}/admin/login?error=1`,
           303
@@ -97,7 +119,10 @@ if (
       });
     }
 
-    // Admin dashboard
+    // --------------------------------
+    // ADMIN DASHBOARD
+    // --------------------------------
+
     if (url.pathname === "/admin") {
       const session = await getSession(
         request,
@@ -113,40 +138,40 @@ if (
 
       return new Response(
         `<!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1"
-          >
-          <title>Psychic Index Admin</title>
-        </head>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+  <title>Psychic Index Admin</title>
+</head>
 
-        <body>
+<body>
 
-          <h1>Psychic Index Admin</h1>
+  <h1>Psychic Index Admin</h1>
 
-          <p>
-            Welcome,
-            ${escapeHtml(session.email)}
-          </p>
+  <p>
+    Welcome,
+    ${escapeHtml(session.email)}
+  </p>
 
-          <p>
-            You are successfully logged in.
-          </p>
+  <p>
+    You are successfully logged in.
+  </p>
 
-          <form
-            method="POST"
-            action="/admin/logout"
-          >
-            <button type="submit">
-              Log out
-            </button>
-          </form>
+  <form
+    method="POST"
+    action="/admin/logout"
+  >
+    <button type="submit">
+      Log out
+    </button>
+  </form>
 
-        </body>
-        </html>`,
+</body>
+</html>`,
         {
           headers: {
             "Content-Type":
@@ -156,7 +181,10 @@ if (
       );
     }
 
-    // Admin logout
+    // --------------------------------
+    // ADMIN LOGOUT
+    // --------------------------------
+
     if (
       url.pathname === "/admin/logout" &&
       request.method === "POST"
@@ -173,6 +201,10 @@ if (
       });
     }
 
+    // --------------------------------
+    // PUBLIC WEBSITE
+    // --------------------------------
+
     return env.ASSETS.fetch(request);
   }
 };
@@ -182,10 +214,7 @@ function escapeHtml(value) {
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
-    .replaceAll(
-      '"',
-      "&quot;"
-    )
+    .replaceAll('"', "&quot;")
     .replaceAll(
       "'",
       "&#039;"
