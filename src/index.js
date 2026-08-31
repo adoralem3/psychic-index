@@ -26,18 +26,16 @@ export default {
         site: "Psychic Index",
         database
       });
-    }
-
-    // Admin login page
-    if (
-      url.pathname === "/admin/login" &&
-      request.method === "GET"
-    ) {
-      return env.ASSETS.fetch(
-        new Request(`${url.origin}/admin-login.html`)
-      );
-    }
-
+if (
+  url.pathname === "/admin/login" &&
+  request.method === "GET"
+) {
+  return env.ASSETS.fetch(
+    new Request(
+      new URL("/admin-login.html", request.url)
+    )
+  );
+}
     // Admin login submission
     if (
       url.pathname === "/admin/login" &&
