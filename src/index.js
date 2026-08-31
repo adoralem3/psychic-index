@@ -32,6 +32,76 @@ export default {
     }
 
     // ================================
+    // TEMPORARY AUTH DIAGNOSTIC
+    // ================================
+
+    if (
+      url.pathname === "/api/auth-test" &&
+      request.method === "POST"
+    ) {
+      try {
+        const formData = await request.formData();
+
+        const email = String(
+          formData.get("email") || ""
+        )
+          .trim()
+          .toLowerCase();
+
+        const password = String(
+          formData.get("password") || ""
+        );
+
+        if (!email || !password) {
+          return Response.json(
+            {
+              status: "error",
+              message: "Email and password are required."
+            },
+            { status: 400 }
+          );
+        }
+
+        const admin = await env.DB.prepare(
+          `SELECT id, email, password_hash
+           FROM admins
+           WHERE email = ?
+           LIMIT 1`
+        )
+          .bind(email)
+          .first();
+
+        if (!admin) {
+          return Response.json({
+            status: "error",
+            account_found: false,
+            password_verified: false
+          });
+        }
+
+        const verified = await verifyPassword(
+          password,
+          admin.password_hash
+        );
+
+        return Response.json({
+          status: "ok",
+          account_found: true,
+          password_verified: verified
+        });
+
+      } catch (error) {
+        return Response.json(
+          {
+            status: "error",
+            message: "Authentication diagnostic failed."
+          },
+          { status: 500 }
+        );
+      }
+    }
+
+    // ================================
     // ADMIN LOGIN PAGE
     // ================================
 
@@ -73,7 +143,6 @@ export default {
 
     h1 {
       margin: 0 0 8px;
-      font-size: 28px;
     }
 
     h2 {
@@ -107,10 +176,6 @@ export default {
       color: white;
       font-size: 16px;
       cursor: pointer;
-    }
-
-    button:hover {
-      opacity: 0.9;
     }
   </style>
 </head>
@@ -164,7 +229,7 @@ export default {
     }
 
     // ================================
-    // ADMIN LOGIN SUBMISSION
+    // ADMIN LOGIN
     // ================================
 
     if (
@@ -183,13 +248,6 @@ export default {
         const password = String(
           formData.get("password") || ""
         );
-
-        if (!email || !password) {
-          return new Response(
-            "Email and password are required.",
-            { status: 400 }
-          );
-        }
 
         const admin = await env.DB.prepare(
           `SELECT id, email, password_hash
@@ -266,83 +324,26 @@ export default {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Psychic Index Admin</title>
-
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f5f3f8;
-    }
-
-    header {
-      background: white;
-      padding: 20px 30px;
-      border-bottom: 1px solid #ddd;
-    }
-
-    main {
-      max-width: 1000px;
-      margin: 40px auto;
-      padding: 20px;
-    }
-
-    .card {
-      background: white;
-      padding: 30px;
-      border-radius: 16px;
-      box-shadow: 0 5px 25px rgba(0,0,0,0.06);
-    }
-
-    button {
-      padding: 12px 20px;
-      border: 0;
-      border-radius: 8px;
-      background: #222;
-      color: white;
-      cursor: pointer;
-    }
-  </style>
 </head>
 
 <body>
 
-<header>
-  <strong>Psychic Index</strong>
-</header>
+  <h1>Psychic Index Admin</h1>
 
-<main>
+  <p>
+    Welcome,
+    ${escapeHtml(session.email)}
+  </p>
 
-  <div class="card">
+  <p>
+    Your administrator account is working.
+  </p>
 
-    <h1>Admin Dashboard</h1>
-
-    <p>
-      Welcome,
-      ${escapeHtml(session.email)}
-    </p>
-
-    <p>
-      Your administrator account is working.
-    </p>
-
-    <form
-      method="POST"
-      action="/admin/logout"
-    >
-      <button type="submit">
-        Log out
-      </button>
-    </form>
-
-  </div>
-
-</main>
+  <form method="POST" action="/admin/logout">
+    <button type="submit">Log out</button>
+  </form>
 
 </body>
 </html>`,
@@ -363,7 +364,7 @@ export default {
     }
 
     // ================================
-    // ADMIN LOGOUT
+    // LOGOUT
     // ================================
 
     if (
@@ -373,8 +374,7 @@ export default {
       try {
         await deleteSession(request, env);
       } catch (error) {
-        // Continue even if the session
-        // has already expired.
+        // Ignore expired/missing sessions.
       }
 
       return new Response(null, {
