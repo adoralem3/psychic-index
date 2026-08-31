@@ -155,7 +155,7 @@ export default {
 
 async function adminDashboard(env, adminPath) {
   try {
-    const result = await env.DB.prepare(
+    const stats = await env.DB.prepare(
       `SELECT
         COUNT(*) AS total,
         SUM(
@@ -173,76 +173,306 @@ async function adminDashboard(env, adminPath) {
       FROM articles`
     ).first();
 
+    const recent = await env.DB.prepare(
+      `SELECT
+        id,
+        title,
+        category,
+        status,
+        updated_at
+      FROM articles
+      ORDER BY updated_at DESC
+      LIMIT 6`
+    ).all();
+
+    let recentRows = "";
+
+    for (const article of recent.results) {
+      recentRows += `
+        <tr>
+
+          <td>
+            <a
+              class="article-link"
+              href="${adminPath}/articles/edit?id=${article.id}"
+            >
+              ${escapeHtml(article.title)}
+            </a>
+          </td>
+
+          <td>
+            ${escapeHtml(article.category || "Uncategorized")}
+          </td>
+
+          <td>
+            ${statusBadge(article.status)}
+          </td>
+
+          <td>
+            ${escapeHtml(
+              formatDate(article.updated_at)
+            )}
+          </td>
+
+        </tr>
+      `;
+    }
+
+    if (!recentRows) {
+      recentRows = `
+        <tr>
+          <td colspan="4" class="empty">
+            No articles yet.
+          </td>
+        </tr>
+      `;
+    }
+
     return new Response(
       adminLayout(
-        "Admin Dashboard",
+        "Dashboard",
+        "dashboard",
+        adminPath,
         `
-        <h1>Admin Dashboard</h1>
+        <div class="welcome-row">
 
-        <p>
-          Welcome to Psychic Index.
-        </p>
+          <div>
+            <div class="eyebrow">
+              ADMINISTRATION
+            </div>
 
-        <div class="stats">
+            <h1>Good afternoon</h1>
 
-          <div class="stat">
-            <strong>${result.total || 0}</strong>
-            <span>Total Articles</span>
+            <p>
+              Welcome back to your Psychic Index dashboard.
+            </p>
           </div>
 
-          <div class="stat">
-            <strong>${result.published || 0}</strong>
-            <span>Published</span>
+          <a
+            class="primary-button"
+            href="${adminPath}/articles/new"
+          >
+            <span>+</span>
+            New Article
+          </a>
+
+        </div>
+
+
+        <div class="stats-grid">
+
+          <div class="stat-card">
+
+            <div class="stat-icon purple">
+              ✦
+            </div>
+
+            <div>
+              <div class="stat-number">
+                ${stats.total || 0}
+              </div>
+
+              <div class="stat-label">
+                Total Articles
+              </div>
+            </div>
+
           </div>
 
-          <div class="stat">
-            <strong>${result.drafts || 0}</strong>
-            <span>Drafts</span>
+
+          <div class="stat-card">
+
+            <div class="stat-icon green">
+              ✓
+            </div>
+
+            <div>
+              <div class="stat-number">
+                ${stats.published || 0}
+              </div>
+
+              <div class="stat-label">
+                Published
+              </div>
+            </div>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <div class="stat-icon amber">
+              ◷
+            </div>
+
+            <div>
+              <div class="stat-number">
+                ${stats.drafts || 0}
+              </div>
+
+              <div class="stat-label">
+                Draft Articles
+              </div>
+            </div>
+
           </div>
 
         </div>
 
-        <div class="grid">
 
-          <div class="card">
-            <h2>📝 Articles</h2>
+        <div class="content-grid">
 
-            <p>
-              Write, edit and manage your articles.
-            </p>
+          <section class="panel large-panel">
 
-            <a
-              class="button"
-              href="${adminPath}/articles"
-            >
-              Manage Articles
-            </a>
-          </div>
+            <div class="panel-header">
 
-          <div class="card">
-            <h2>🔮 Psychic Websites</h2>
-            <p>Coming next.</p>
-          </div>
+              <div>
+                <h2>Recent Articles</h2>
 
-          <div class="card">
-            <h2>⭐ Reviews & Ratings</h2>
-            <p>Coming next.</p>
-          </div>
+                <p>
+                  Your latest content activity
+                </p>
+              </div>
 
-          <div class="card">
-            <h2>🖼️ Media</h2>
-            <p>Coming next.</p>
-          </div>
+              <a
+                class="text-link"
+                href="${adminPath}/articles"
+              >
+                View all
+              </a>
 
-          <div class="card">
-            <h2>🏷️ Categories</h2>
-            <p>Coming next.</p>
-          </div>
+            </div>
 
-          <div class="card">
-            <h2>⚙️ SEO</h2>
-            <p>Coming next.</p>
-          </div>
+
+            <div class="table-wrapper">
+
+              <table>
+
+                <thead>
+                  <tr>
+                    <th>Article</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Updated</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  ${recentRows}
+                </tbody>
+
+              </table>
+
+            </div>
+
+          </section>
+
+
+          <section class="panel">
+
+            <div class="panel-header">
+
+              <div>
+                <h2>Quick Actions</h2>
+
+                <p>
+                  Manage your website
+                </p>
+              </div>
+
+            </div>
+
+
+            <div class="quick-actions">
+
+              <a
+                href="${adminPath}/articles/new"
+                class="quick-action"
+              >
+                <div class="quick-icon">
+                  ✎
+                </div>
+
+                <div>
+                  <strong>
+                    Write an article
+                  </strong>
+
+                  <span>
+                    Create new content
+                  </span>
+                </div>
+
+                <span class="arrow">
+                  →
+                </span>
+              </a>
+
+
+              <a
+                href="${adminPath}/articles"
+                class="quick-action"
+              >
+                <div class="quick-icon">
+                  ☰
+                </div>
+
+                <div>
+                  <strong>
+                    Manage articles
+                  </strong>
+
+                  <span>
+                    Edit existing content
+                  </span>
+                </div>
+
+                <span class="arrow">
+                  →
+                </span>
+              </a>
+
+
+              <div class="quick-action disabled">
+
+                <div class="quick-icon">
+                  ♢
+                </div>
+
+                <div>
+                  <strong>
+                    Psychic listings
+                  </strong>
+
+                  <span>
+                    Coming soon
+                  </span>
+                </div>
+
+              </div>
+
+
+              <div class="quick-action disabled">
+
+                <div class="quick-icon">
+                  ★
+                </div>
+
+                <div>
+                  <strong>
+                    Reviews
+                  </strong>
+
+                  <span>
+                    Coming soon
+                  </span>
+                </div>
+
+              </div>
+
+            </div>
+
+          </section>
 
         </div>
         `
@@ -261,7 +491,8 @@ async function adminDashboard(env, adminPath) {
       {
         status: 500,
         headers: {
-          "Content-Type": "text/plain; charset=UTF-8"
+          "Content-Type":
+            "text/plain; charset=UTF-8"
         }
       }
     );
@@ -270,7 +501,7 @@ async function adminDashboard(env, adminPath) {
 
 
 // ==========================================
-// ARTICLES LIST
+// ARTICLES PAGE
 // ==========================================
 
 async function articlesPage(env, adminPath) {
@@ -283,78 +514,104 @@ async function articlesPage(env, adminPath) {
         category,
         status,
         created_at,
-        updated_at,
-        published_at
+        updated_at
       FROM articles
-      ORDER BY created_at DESC`
+      ORDER BY updated_at DESC`
     ).all();
 
     let rows = "";
 
     for (const article of result.results) {
-      const statusClass =
-        article.status === "published"
-          ? "published"
-          : "draft";
-
-      const date =
-        article.updated_at ||
-        article.published_at ||
-        article.created_at ||
-        "";
-
       rows += `
         <tr>
 
           <td>
-            <strong>
-              ${escapeHtml(article.title)}
-            </strong>
+
+            <div class="article-title-cell">
+
+              <div class="article-thumbnail">
+                ${article.featured_image
+                  ? `
+                    <img
+                      src="${escapeHtml(article.featured_image)}"
+                      alt=""
+                    >
+                  `
+                  : "✦"
+                }
+              </div>
+
+              <div>
+
+                <a
+                  class="article-link"
+                  href="${adminPath}/articles/edit?id=${article.id}"
+                >
+                  ${escapeHtml(article.title)}
+                </a>
+
+                <div class="slug">
+                  /articles/${escapeHtml(article.slug)}
+                </div>
+
+              </div>
+
+            </div>
+
           </td>
 
           <td>
-            ${escapeHtml(article.category || "—")}
+            ${escapeHtml(
+              article.category ||
+              "Uncategorized"
+            )}
           </td>
 
           <td>
-            <span class="status ${statusClass}">
-              ${escapeHtml(article.status)}
-            </span>
+            ${statusBadge(article.status)}
           </td>
 
           <td>
-            ${escapeHtml(formatDate(date))}
+            ${escapeHtml(
+              formatDate(article.updated_at)
+            )}
           </td>
 
-          <td class="actions">
+          <td>
 
-            <a
-              class="small-button"
-              href="${adminPath}/articles/edit?id=${article.id}"
-            >
-              Edit
-            </a>
+            <div class="table-actions">
 
-            <form
-              method="POST"
-              action="${adminPath}/articles/delete"
-              onsubmit="return confirm('Delete this article?');"
-            >
+              <a
+                class="icon-button"
+                href="${adminPath}/articles/edit?id=${article.id}"
+                title="Edit"
+              >
+                ✎
+              </a>
 
-              <input
-                type="hidden"
-                name="id"
-                value="${article.id}"
+              <form
+                method="POST"
+                action="${adminPath}/articles/delete"
+                onsubmit="return confirm('Are you sure you want to delete this article?');"
               >
 
-              <button
-                class="delete-button"
-                type="submit"
-              >
-                Delete
-              </button>
+                <input
+                  type="hidden"
+                  name="id"
+                  value="${article.id}"
+                >
 
-            </form>
+                <button
+                  class="icon-button danger"
+                  type="submit"
+                  title="Delete"
+                >
+                  ×
+                </button>
+
+              </form>
+
+            </div>
 
           </td>
 
@@ -365,8 +622,32 @@ async function articlesPage(env, adminPath) {
     if (!rows) {
       rows = `
         <tr>
-          <td colspan="5">
-            No articles yet.
+          <td
+            colspan="5"
+            class="empty"
+          >
+            <div class="empty-state">
+
+              <div class="empty-icon">
+                ✦
+              </div>
+
+              <h3>
+                No articles yet
+              </h3>
+
+              <p>
+                Start building your Psychic Index content.
+              </p>
+
+              <a
+                class="primary-button"
+                href="${adminPath}/articles/new"
+              >
+                Create your first article
+              </a>
+
+            </div>
           </td>
         </tr>
       `;
@@ -375,52 +656,155 @@ async function articlesPage(env, adminPath) {
     return new Response(
       adminLayout(
         "Articles",
+        "articles",
+        adminPath,
         `
-        <div class="page-header">
+        <div class="page-title-row">
 
           <div>
+            <div class="eyebrow">
+              CONTENT
+            </div>
+
             <h1>Articles</h1>
 
             <p>
-              Manage your Psychic Index articles.
+              Create and manage your Psychic Index content.
             </p>
           </div>
 
           <a
-            class="button"
+            class="primary-button"
             href="${adminPath}/articles/new"
           >
-            + New Article
+            <span>+</span>
+            New Article
           </a>
 
         </div>
 
-        <div class="table-card">
 
-          <table>
+        <section class="panel">
 
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Category</th>
-                <th>Status</th>
-                <th>Last Updated</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
+          <div class="article-toolbar">
 
-            <tbody>
-              ${rows}
-            </tbody>
+            <div class="search-box">
 
-          </table>
+              <span>
+                ⌕
+              </span>
 
-        </div>
+              <input
+                id="articleSearch"
+                type="search"
+                placeholder="Search articles..."
+                oninput="filterArticles()"
+              >
+
+            </div>
+
+            <select
+              id="statusFilter"
+              onchange="filterArticles()"
+            >
+
+              <option value="">
+                All statuses
+              </option>
+
+              <option value="published">
+                Published
+              </option>
+
+              <option value="draft">
+                Draft
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="table-wrapper">
+
+            <table id="articlesTable">
+
+              <thead>
+
+                <tr>
+                  <th>Article</th>
+                  <th>Category</th>
+                  <th>Status</th>
+                  <th>Updated</th>
+                  <th></th>
+                </tr>
+
+              </thead>
+
+              <tbody>
+
+                ${rows}
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </section>
+
+
+        <script>
+
+          function filterArticles() {
+
+            const search =
+              document
+                .getElementById("articleSearch")
+                .value
+                .toLowerCase();
+
+            const status =
+              document
+                .getElementById("statusFilter")
+                .value
+                .toLowerCase();
+
+            const rows =
+              document.querySelectorAll(
+                "#articlesTable tbody tr"
+              );
+
+            rows.forEach(row => {
+
+              const text =
+                row.innerText.toLowerCase();
+
+              const matchesSearch =
+                !search ||
+                text.includes(search);
+
+              const matchesStatus =
+                !status ||
+                text.includes(status);
+
+              row.style.display =
+                matchesSearch &&
+                matchesStatus
+                  ? ""
+                  : "none";
+
+            });
+
+          }
+
+        </script>
         `
       ),
       {
         headers: {
-          "Content-Type": "text/html; charset=UTF-8"
+          "Content-Type":
+            "text/html; charset=UTF-8"
         }
       }
     );
@@ -432,7 +816,8 @@ async function articlesPage(env, adminPath) {
       {
         status: 500,
         headers: {
-          "Content-Type": "text/plain; charset=UTF-8"
+          "Content-Type":
+            "text/plain; charset=UTF-8"
         }
       }
     );
@@ -441,23 +826,36 @@ async function articlesPage(env, adminPath) {
 
 
 // ==========================================
-// NEW ARTICLE PAGE
+// NEW ARTICLE
 // ==========================================
 
 function newArticlePage(adminPath) {
   return new Response(
     adminLayout(
       "New Article",
+      "articles",
+      adminPath,
       `
-      <div class="page-header">
+      <div class="page-title-row">
 
         <div>
+          <div class="eyebrow">
+            CONTENT
+          </div>
+
           <h1>New Article</h1>
 
           <p>
-            Create a new Psychic Index article.
+            Create a new article for Psychic Index.
           </p>
         </div>
+
+        <a
+          class="secondary-button"
+          href="${adminPath}/articles"
+        >
+          ← Back to Articles
+        </a>
 
       </div>
 
@@ -469,7 +867,8 @@ function newArticlePage(adminPath) {
     ),
     {
       headers: {
-        "Content-Type": "text/html; charset=UTF-8"
+        "Content-Type":
+          "text/html; charset=UTF-8"
       }
     }
   );
@@ -572,9 +971,6 @@ async function createArticle(
       )
       .run();
 
-    // IMPORTANT:
-    // Redirect must use an absolute URL.
-
     const redirectUrl =
       new URL(
         adminPath + "/articles",
@@ -594,7 +990,8 @@ async function createArticle(
       {
         status: 500,
         headers: {
-          "Content-Type": "text/plain; charset=UTF-8"
+          "Content-Type":
+            "text/plain; charset=UTF-8"
         }
       }
     );
@@ -603,7 +1000,7 @@ async function createArticle(
 
 
 // ==========================================
-// EDIT ARTICLE PAGE
+// EDIT ARTICLE
 // ==========================================
 
 async function editArticlePage(
@@ -632,16 +1029,29 @@ async function editArticlePage(
     return new Response(
       adminLayout(
         "Edit Article",
+        "articles",
+        adminPath,
         `
-        <div class="page-header">
+        <div class="page-title-row">
 
           <div>
+            <div class="eyebrow">
+              CONTENT
+            </div>
+
             <h1>Edit Article</h1>
 
             <p>
-              Update your article.
+              Update your article and SEO information.
             </p>
           </div>
+
+          <a
+            class="secondary-button"
+            href="${adminPath}/articles"
+          >
+            ← Back to Articles
+          </a>
 
         </div>
 
@@ -653,7 +1063,8 @@ async function editArticlePage(
       ),
       {
         headers: {
-          "Content-Type": "text/html; charset=UTF-8"
+          "Content-Type":
+            "text/html; charset=UTF-8"
         }
       }
     );
@@ -666,7 +1077,8 @@ async function editArticlePage(
       {
         status: 500,
         headers: {
-          "Content-Type": "text/plain; charset=UTF-8"
+          "Content-Type":
+            "text/plain; charset=UTF-8"
         }
       }
     );
@@ -724,10 +1136,6 @@ async function updateArticle(
         ? "published"
         : "draft";
 
-    // ------------------------------------------
-    // VALIDATION
-    // ------------------------------------------
-
     if (!id) {
       return new Response(
         "Update error: Article ID is missing.",
@@ -749,10 +1157,6 @@ async function updateArticle(
       );
     }
 
-    // ------------------------------------------
-    // FIND EXISTING ARTICLE
-    // ------------------------------------------
-
     const existing =
       await env.DB.prepare(
         `SELECT
@@ -770,14 +1174,10 @@ async function updateArticle(
       return new Response(
         "Update error: Article ID " +
         id +
-        " was not found in the database.",
+        " was not found.",
         { status: 404 }
       );
     }
-
-    // ------------------------------------------
-    // CHECK FOR DUPLICATE SLUG
-    // ------------------------------------------
 
     const duplicate =
       await env.DB.prepare(
@@ -799,10 +1199,6 @@ async function updateArticle(
       );
     }
 
-    // ------------------------------------------
-    // PUBLISHED DATE
-    // ------------------------------------------
-
     let publishedAt =
       existing.published_at || null;
 
@@ -817,10 +1213,6 @@ async function updateArticle(
     if (status === "draft") {
       publishedAt = null;
     }
-
-    // ------------------------------------------
-    // UPDATE DATABASE
-    // ------------------------------------------
 
     const result =
       await env.DB.prepare(
@@ -854,10 +1246,6 @@ async function updateArticle(
         )
         .run();
 
-    // ------------------------------------------
-    // CONFIRM THAT A ROW WAS UPDATED
-    // ------------------------------------------
-
     if (
       result.meta &&
       result.meta.changes === 0
@@ -875,10 +1263,6 @@ async function updateArticle(
         }
       );
     }
-
-    // ------------------------------------------
-    // REDIRECT TO ARTICLES
-    // ------------------------------------------
 
     const redirectUrl =
       new URL(
@@ -980,190 +1364,195 @@ function articleForm(action, article) {
       : "";
 
   return `
-  <div class="form-card">
+  <form
+    method="POST"
+    action="${action}"
+    class="editor-layout"
+  >
 
-    <form
-      method="POST"
-      action="${action}"
-    >
+    <div class="editor-main">
 
-      ${
-        article
-          ? `
+      <section class="panel">
+
+        <div class="panel-header">
+
+          <div>
+            <h2>Article Content</h2>
+
+            <p>
+              Write the main content of your article.
+            </p>
+          </div>
+
+        </div>
+
+
+        ${
+          article
+            ? `
+              <input
+                type="hidden"
+                name="id"
+                value="${escapeHtml(article.id)}"
+              >
+            `
+            : ""
+        }
+
+
+        <label for="title">
+          Title
+        </label>
+
+        <input
+          id="title"
+          name="title"
+          type="text"
+          value="${value("title")}"
+          placeholder="Enter your article title"
+          class="title-input"
+          required
+        >
+
+
+        <label for="slug">
+          URL Slug
+        </label>
+
+        <div class="slug-input">
+
+          <span>
+            /articles/
+          </span>
+
           <input
-            type="hidden"
-            name="id"
-            value="${escapeHtml(article.id)}"
+            id="slug"
+            name="slug"
+            type="text"
+            value="${value("slug")}"
+            placeholder="your-article-title"
           >
-          `
-          : ""
-      }
 
-      <label for="title">
-        Article Title
-      </label>
+        </div>
 
-      <input
-        id="title"
-        name="title"
-        type="text"
-        value="${value("title")}"
-        placeholder="Enter your article title"
-        required
-      >
 
-      <label for="slug">
-        URL Slug
-      </label>
+        <label for="excerpt">
+          Excerpt
+        </label>
 
-      <input
-        id="slug"
-        name="slug"
-        type="text"
-        value="${value("slug")}"
-        placeholder="example-article-title"
-      >
+        <textarea
+          id="excerpt"
+          name="excerpt"
+          class="excerpt-input"
+          placeholder="Write a short introduction to your article..."
+        >${value("excerpt")}</textarea>
 
-      <label for="excerpt">
-        Short Description
-      </label>
 
-      <textarea
-        id="excerpt"
-        name="excerpt"
-        placeholder="A short introduction..."
-      >${value("excerpt")}</textarea>
+        <label for="content">
+          Content
+        </label>
 
-      <label for="category">
-        Category
-      </label>
+        <textarea
+          id="content"
+          name="content"
+          class="content-editor"
+          placeholder="Start writing your article..."
+        >${value("content")}</textarea>
 
-      <select
-        id="category"
-        name="category"
-      >
+      </section>
 
-        <option value="">
-          Choose a category
-        </option>
 
-        <option
-          value="Psychic Readings"
-          ${article?.category === "Psychic Readings" ? "selected" : ""}
+      <section class="panel">
+
+        <div class="panel-header">
+
+          <div>
+            <h2>Search Engine Optimization</h2>
+
+            <p>
+              Help search engines understand your article.
+            </p>
+          </div>
+
+          <div class="seo-badge">
+            SEO
+          </div>
+
+        </div>
+
+
+        <label for="seo_title">
+          SEO Title
+        </label>
+
+        <input
+          id="seo_title"
+          name="seo_title"
+          type="text"
+          value="${value("seo_title")}"
+          placeholder="SEO title"
         >
-          Psychic Readings
-        </option>
 
-        <option
-          value="Psychic Websites"
-          ${article?.category === "Psychic Websites" ? "selected" : ""}
+
+        <label for="seo_description">
+          SEO Description
+        </label>
+
+        <textarea
+          id="seo_description"
+          name="seo_description"
+          placeholder="Write a compelling description for search engines..."
+        >${value("seo_description")}</textarea>
+
+      </section>
+
+    </div>
+
+
+    <aside class="editor-sidebar">
+
+
+      <section class="panel">
+
+        <div class="panel-header">
+
+          <div>
+            <h2>Publish</h2>
+          </div>
+
+        </div>
+
+
+        <label for="status">
+          Status
+        </label>
+
+        <select
+          id="status"
+          name="status"
         >
-          Psychic Websites
-        </option>
 
-        <option
-          value="Astrology"
-          ${article?.category === "Astrology" ? "selected" : ""}
+          <option
+            value="draft"
+            ${selected("draft")}
+          >
+            Draft
+          </option>
+
+          <option
+            value="published"
+            ${selected("published")}
+          >
+            Published
+          </option>
+
+        </select>
+
+
+        <button
+          type="submit"
+          class="publish-button"
         >
-          Astrology
-        </option>
-
-        <option
-          value="Horoscopes"
-          ${article?.category === "Horoscopes" ? "selected" : ""}
-        >
-          Horoscopes
-        </option>
-
-        <option
-          value="Spirituality"
-          ${article?.category === "Spirituality" ? "selected" : ""}
-        >
-          Spirituality
-        </option>
-
-        <option
-          value="Reviews"
-          ${article?.category === "Reviews" ? "selected" : ""}
-        >
-          Reviews
-        </option>
-
-      </select>
-
-      <label for="featured_image">
-        Featured Image URL
-      </label>
-
-      <input
-        id="featured_image"
-        name="featured_image"
-        type="text"
-        value="${value("featured_image")}"
-        placeholder="We'll add image uploads later"
-      >
-
-      <label for="content">
-        Article Content
-      </label>
-
-      <textarea
-        id="content"
-        name="content"
-        class="content"
-        placeholder="Write your article here..."
-      >${value("content")}</textarea>
-
-      <label for="seo_title">
-        SEO Title
-      </label>
-
-      <input
-        id="seo_title"
-        name="seo_title"
-        type="text"
-        value="${value("seo_title")}"
-        placeholder="SEO title"
-      >
-
-      <label for="seo_description">
-        SEO Description
-      </label>
-
-      <textarea
-        id="seo_description"
-        name="seo_description"
-        placeholder="Description for search engines..."
-      >${value("seo_description")}</textarea>
-
-      <label for="status">
-        Status
-      </label>
-
-      <select
-        id="status"
-        name="status"
-      >
-
-        <option
-          value="draft"
-          ${selected("draft")}
-        >
-          Save as Draft
-        </option>
-
-        <option
-          value="published"
-          ${selected("published")}
-        >
-          Published
-        </option>
-
-      </select>
-
-      <div class="form-buttons">
-
-        <button type="submit">
           ${
             article
               ? "Update Article"
@@ -1171,11 +1560,119 @@ function articleForm(action, article) {
           }
         </button>
 
-      </div>
+      </section>
 
-    </form>
 
-  </div>
+      <section class="panel">
+
+        <div class="panel-header">
+
+          <div>
+            <h2>Category</h2>
+          </div>
+
+        </div>
+
+
+        <select
+          id="category"
+          name="category"
+        >
+
+          <option value="">
+            Uncategorized
+          </option>
+
+          <option
+            value="Psychic Readings"
+            ${article?.category === "Psychic Readings" ? "selected" : ""}
+          >
+            Psychic Readings
+          </option>
+
+          <option
+            value="Psychic Websites"
+            ${article?.category === "Psychic Websites" ? "selected" : ""}
+          >
+            Psychic Websites
+          </option>
+
+          <option
+            value="Astrology"
+            ${article?.category === "Astrology" ? "selected" : ""}
+          >
+            Astrology
+          </option>
+
+          <option
+            value="Horoscopes"
+            ${article?.category === "Horoscopes" ? "selected" : ""}
+          >
+            Horoscopes
+          </option>
+
+          <option
+            value="Spirituality"
+            ${article?.category === "Spirituality" ? "selected" : ""}
+          >
+            Spirituality
+          </option>
+
+          <option
+            value="Reviews"
+            ${article?.category === "Reviews" ? "selected" : ""}
+          >
+            Reviews
+          </option>
+
+        </select>
+
+      </section>
+
+
+      <section class="panel">
+
+        <div class="panel-header">
+
+          <div>
+            <h2>Featured Image</h2>
+
+            <p>
+              Add an image URL for now.
+            </p>
+          </div>
+
+        </div>
+
+
+        <input
+          id="featured_image"
+          name="featured_image"
+          type="text"
+          value="${value("featured_image")}"
+          placeholder="https://..."
+        >
+
+        ${
+          article?.featured_image
+            ? `
+              <div class="image-preview">
+
+                <img
+                  src="${escapeHtml(article.featured_image)}"
+                  alt=""
+                >
+
+              </div>
+            `
+            : ""
+        }
+
+      </section>
+
+    </aside>
+
+  </form>
   `;
 }
 
@@ -1184,7 +1681,12 @@ function articleForm(action, article) {
 // ADMIN LAYOUT
 // ==========================================
 
-function adminLayout(title, content) {
+function adminLayout(
+  title,
+  active,
+  adminPath,
+  content
+) {
   return `
 <!DOCTYPE html>
 
@@ -1200,7 +1702,7 @@ function adminLayout(title, content) {
 >
 
 <title>
-${escapeHtml(title)} — Psychic Index
+${escapeHtml(title)} — Psychic Index Admin
 </title>
 
 <style>
@@ -1209,153 +1711,610 @@ ${escapeHtml(title)} — Psychic Index
   box-sizing: border-box;
 }
 
+:root {
+  --bg: #f7f6fa;
+  --panel: #ffffff;
+  --border: #e8e5ed;
+  --text: #211c2b;
+  --muted: #777181;
+  --purple: #6f4bb8;
+  --purple-dark: #573595;
+  --purple-light: #f1ecfa;
+  --green: #32845c;
+  --green-light: #eaf6ef;
+  --amber: #a36a20;
+  --amber-light: #fff4e4;
+  --sidebar: #211c2b;
+}
+
 body {
   margin: 0;
 
   font-family:
-    Arial,
-    Helvetica,
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
     sans-serif;
 
-  background: #f5f3f8;
+  background: var(--bg);
 
-  color: #222;
+  color: var(--text);
 }
 
-header {
-  background: white;
+a {
+  color: inherit;
+}
 
-  padding: 22px 30px;
+.admin-shell {
+  min-height: 100vh;
+
+  display: flex;
+}
+
+
+/* ==========================================
+   SIDEBAR
+   ========================================== */
+
+.sidebar {
+  width: 245px;
+
+  flex-shrink: 0;
+
+  background: var(--sidebar);
+
+  color: white;
+
+  min-height: 100vh;
+
+  position: fixed;
+
+  left: 0;
+  top: 0;
+  bottom: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  z-index: 10;
+}
+
+.brand {
+  height: 82px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 0 24px;
 
   border-bottom:
-    1px solid #ddd;
-}
-
-header a {
-  color: #222;
+    1px solid
+    rgba(255,255,255,0.08);
 
   text-decoration: none;
 }
 
-main {
-  max-width: 1150px;
+.brand-symbol {
+  width: 38px;
+  height: 38px;
 
-  margin: 35px auto;
+  border-radius: 11px;
 
-  padding: 20px;
-}
+  display: flex;
 
-h1 {
-  margin-top: 0;
+  align-items: center;
+  justify-content: center;
 
-  font-size: 32px;
-}
-
-h2 {
-  margin-top: 0;
-}
-
-p {
-  color: #666;
-
-  line-height: 1.6;
-}
-
-.grid {
-  display: grid;
-
-  grid-template-columns:
-    repeat(
-      auto-fit,
-      minmax(250px, 1fr)
+  background:
+    linear-gradient(
+      135deg,
+      #8b67d0,
+      #6542a6
     );
 
-  gap: 20px;
-
-  margin-top: 30px;
+  font-size: 20px;
 }
 
-.card,
-.stat,
-.table-card,
-.form-card {
-  background: white;
+.brand-name {
+  font-size: 17px;
 
-  border-radius: 15px;
+  font-weight: 700;
 
-  box-shadow:
-    0 5px 25px
-    rgba(0,0,0,0.06);
+  letter-spacing: -0.2px;
 }
 
-.card {
-  padding: 25px;
-}
-
-.stats {
-  display: grid;
-
-  grid-template-columns:
-    repeat(
-      auto-fit,
-      minmax(180px, 1fr)
-    );
-
-  gap: 20px;
-
-  margin: 30px 0;
-}
-
-.stat {
-  padding: 25px;
-}
-
-.stat strong {
+.brand-subtitle {
   display: block;
 
-  font-size: 32px;
+  font-size: 10px;
+
+  text-transform: uppercase;
+
+  letter-spacing: 1.3px;
+
+  opacity: 0.5;
+
+  margin-top: 2px;
+}
+
+.nav {
+  padding: 22px 14px;
+}
+
+.nav-label {
+  padding: 0 11px;
+
+  margin-bottom: 9px;
+
+  font-size: 10px;
+
+  text-transform: uppercase;
+
+  letter-spacing: 1.5px;
+
+  color: rgba(255,255,255,0.4);
+}
+
+.nav-link {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 11px 12px;
+
+  margin-bottom: 3px;
+
+  border-radius: 9px;
+
+  text-decoration: none;
+
+  color:
+    rgba(255,255,255,0.68);
+
+  font-size: 14px;
+
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.nav-link:hover {
+  color: white;
+
+  background:
+    rgba(255,255,255,0.07);
+}
+
+.nav-link.active {
+  color: white;
+
+  background:
+    rgba(123,91,190,0.32);
+}
+
+.nav-icon {
+  width: 21px;
+
+  text-align: center;
+
+  font-size: 16px;
+
+  opacity: 0.9;
+}
+
+.nav-link.disabled {
+  opacity: 0.42;
+
+  cursor: default;
+}
+
+.nav-link .coming {
+  margin-left: auto;
+
+  font-size: 9px;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.5px;
+
+  opacity: 0.55;
+}
+
+.sidebar-bottom {
+  margin-top: auto;
+
+  padding: 16px 14px 20px;
+
+  border-top:
+    1px solid
+    rgba(255,255,255,0.08);
+}
+
+.site-link {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  color:
+    rgba(255,255,255,0.65);
+
+  text-decoration: none;
+
+  padding: 10px 12px;
+
+  border-radius: 8px;
+
+  font-size: 13px;
+}
+
+.site-link:hover {
+  color: white;
+
+  background:
+    rgba(255,255,255,0.06);
+}
+
+
+/* ==========================================
+   MAIN
+   ========================================== */
+
+.main-area {
+  margin-left: 245px;
+
+  width: calc(100% - 245px);
+
+  min-width: 0;
+}
+
+.topbar {
+  height: 82px;
+
+  background: white;
+
+  border-bottom:
+    1px solid
+    var(--border);
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: flex-end;
+
+  padding: 0 34px;
+}
+
+.admin-profile {
+  display: flex;
+
+  align-items: center;
+
+  gap: 11px;
+}
+
+.admin-avatar {
+  width: 36px;
+  height: 36px;
+
+  border-radius: 50%;
+
+  background:
+    var(--purple-light);
+
+  color: var(--purple);
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-weight: 700;
+}
+
+.admin-info strong {
+  display: block;
+
+  font-size: 13px;
+}
+
+.admin-info span {
+  display: block;
+
+  color: var(--muted);
+
+  font-size: 11px;
+
+  margin-top: 2px;
+}
+
+.content {
+  max-width: 1450px;
+
+  margin: 0 auto;
+
+  padding: 38px 40px 70px;
+}
+
+
+/* ==========================================
+   TYPOGRAPHY
+   ========================================== */
+
+.eyebrow {
+  font-size: 10px;
+
+  font-weight: 700;
+
+  letter-spacing: 1.8px;
+
+  color: var(--purple);
 
   margin-bottom: 8px;
 }
 
-.stat span {
-  color: #666;
+h1 {
+  margin: 0;
+
+  font-size: 31px;
+
+  line-height: 1.15;
+
+  letter-spacing: -1px;
 }
 
-.button,
-button {
-  display: inline-block;
+h2 {
+  margin: 0;
+
+  font-size: 16px;
+
+  letter-spacing: -0.2px;
+}
+
+h3 {
+  margin: 0;
+}
+
+p {
+  margin: 8px 0 0;
+
+  color: var(--muted);
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+
+/* ==========================================
+   BUTTONS
+   ========================================== */
+
+.primary-button {
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 8px;
 
   border: 0;
 
-  border-radius: 8px;
+  border-radius: 9px;
 
-  background: #222;
+  background: var(--purple);
 
   color: white;
 
-  padding: 12px 18px;
+  padding: 11px 17px;
 
-  font-size: 15px;
+  font-size: 13px;
+
+  font-weight: 600;
 
   text-decoration: none;
 
   cursor: pointer;
+
+  transition:
+    background 0.15s,
+    transform 0.15s;
 }
 
-.page-header {
+.primary-button:hover {
+  background: var(--purple-dark);
+
+  transform: translateY(-1px);
+}
+
+.secondary-button {
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border: 1px solid var(--border);
+
+  border-radius: 9px;
+
+  background: white;
+
+  color: var(--text);
+
+  padding: 10px 15px;
+
+  font-size: 13px;
+
+  text-decoration: none;
+}
+
+.text-link {
+  color: var(--purple);
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+  text-decoration: none;
+}
+
+
+/* ==========================================
+   DASHBOARD
+   ========================================== */
+
+.welcome-row,
+.page-title-row {
+  display: flex;
+
+  align-items: flex-end;
+
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin-bottom: 30px;
+}
+
+.stats-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 18px;
+
+  margin-bottom: 22px;
+}
+
+.stat-card {
+  background: white;
+
+  border: 1px solid var(--border);
+
+  border-radius: 13px;
+
+  padding: 22px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 15px;
+}
+
+.stat-icon {
+  width: 45px;
+  height: 45px;
+
+  border-radius: 11px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-size: 20px;
+}
+
+.stat-icon.purple {
+  background: var(--purple-light);
+
+  color: var(--purple);
+}
+
+.stat-icon.green {
+  background: var(--green-light);
+
+  color: var(--green);
+}
+
+.stat-icon.amber {
+  background: var(--amber-light);
+
+  color: var(--amber);
+}
+
+.stat-number {
+  font-size: 27px;
+
+  font-weight: 750;
+
+  letter-spacing: -1px;
+}
+
+.stat-label {
+  color: var(--muted);
+
+  font-size: 12px;
+
+  margin-top: 3px;
+}
+
+.content-grid {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1.65fr)
+    minmax(280px, 0.75fr);
+
+  gap: 22px;
+}
+
+
+/* ==========================================
+   PANELS
+   ========================================== */
+
+.panel {
+  background: white;
+
+  border:
+    1px solid
+    var(--border);
+
+  border-radius: 13px;
+
+  overflow: hidden;
+}
+
+.panel-header {
+  padding: 21px 23px;
+
   display: flex;
 
   align-items: center;
 
   justify-content: space-between;
 
-  gap: 20px;
+  gap: 15px;
 
-  margin-bottom: 25px;
+  border-bottom:
+    1px solid
+    var(--border);
 }
 
-.table-card {
+
+/* ==========================================
+   TABLES
+   ========================================== */
+
+.table-wrapper {
   overflow-x: auto;
 }
 
@@ -1365,91 +2324,391 @@ table {
   border-collapse: collapse;
 }
 
-th,
-td {
-  padding: 16px;
+th {
+  padding: 12px 22px;
 
   text-align: left;
 
-  border-bottom:
-    1px solid #eee;
+  color: var(--muted);
+
+  font-size: 10px;
+
+  text-transform: uppercase;
+
+  letter-spacing: 1px;
+
+  font-weight: 650;
+
+  background: #fcfbfd;
 }
 
-th {
-  font-size: 14px;
+td {
+  padding: 15px 22px;
 
-  color: #666;
+  border-top:
+    1px solid
+    #f0edf3;
+
+  font-size: 12px;
+
+  color: #4e4858;
+}
+
+.article-link {
+  color: var(--text);
+
+  text-decoration: none;
+
+  font-weight: 600;
+}
+
+.article-link:hover {
+  color: var(--purple);
+}
+
+.slug {
+  color: #9a94a2;
+
+  font-size: 10px;
+
+  margin-top: 4px;
+}
+
+.article-title-cell {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  min-width: 250px;
+}
+
+.article-thumbnail {
+  width: 38px;
+  height: 38px;
+
+  flex-shrink: 0;
+
+  border-radius: 8px;
+
+  background: var(--purple-light);
+
+  color: var(--purple);
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  overflow: hidden;
+}
+
+.article-thumbnail img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
 }
 
 .status {
-  display: inline-block;
+  display: inline-flex;
 
-  padding: 6px 10px;
+  align-items: center;
+
+  gap: 6px;
 
   border-radius: 20px;
 
-  font-size: 13px;
+  padding: 5px 9px;
+
+  font-size: 10px;
+
+  font-weight: 650;
 
   text-transform: capitalize;
 }
 
+.status::before {
+  content: "";
+
+  width: 5px;
+  height: 5px;
+
+  border-radius: 50%;
+
+  background: currentColor;
+}
+
 .status.published {
-  background: #e8f5ea;
+  color: var(--green);
+
+  background: var(--green-light);
 }
 
 .status.draft {
-  background: #f1f1f1;
+  color: var(--amber);
+
+  background: var(--amber-light);
 }
 
-.actions {
+.table-actions {
   display: flex;
 
-  gap: 8px;
-
   align-items: center;
+
+  gap: 5px;
 }
 
-.actions form {
+.table-actions form {
   margin: 0;
 }
 
-.small-button,
-.delete-button {
-  padding: 8px 12px;
+.icon-button {
+  width: 31px;
+  height: 31px;
+
+  border: 1px solid var(--border);
+
+  border-radius: 7px;
+
+  background: white;
+
+  color: #66606f;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  text-decoration: none;
+
+  cursor: pointer;
 
   font-size: 13px;
 }
 
-.small-button {
-  background: #eee;
+.icon-button:hover {
+  background: var(--purple-light);
 
-  color: #222;
+  color: var(--purple);
+}
 
-  border-radius: 7px;
+.icon-button.danger:hover {
+  background: #fff0f0;
+
+  color: #b44;
+}
+
+.empty {
+  text-align: center;
+
+  padding: 45px 20px;
+
+  color: var(--muted);
+}
+
+
+/* ==========================================
+   QUICK ACTIONS
+   ========================================== */
+
+.quick-actions {
+  padding: 8px 12px 12px;
+}
+
+.quick-action {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 12px 10px;
+
+  border-radius: 9px;
 
   text-decoration: none;
+
+  transition:
+    background 0.15s;
 }
 
-.delete-button {
-  background: #eee;
-
-  color: #222;
+.quick-action:hover {
+  background: #faf8fc;
 }
 
-.form-card {
-  padding: 35px;
+.quick-action.disabled {
+  opacity: 0.45;
 
-  max-width: 900px;
+  cursor: default;
+}
+
+.quick-icon {
+  width: 35px;
+  height: 35px;
+
+  border-radius: 9px;
+
+  background: var(--purple-light);
+
+  color: var(--purple);
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  flex-shrink: 0;
+}
+
+.quick-action strong {
+  display: block;
+
+  font-size: 12px;
+}
+
+.quick-action span {
+  display: block;
+
+  color: var(--muted);
+
+  font-size: 10px;
+
+  margin-top: 2px;
+}
+
+.quick-action .arrow {
+  margin-left: auto;
+
+  font-size: 15px;
+
+  color: #aaa;
+}
+
+
+/* ==========================================
+   ARTICLE TOOLBAR
+   ========================================== */
+
+.article-toolbar {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 17px 20px;
+
+  border-bottom:
+    1px solid
+    var(--border);
+}
+
+.search-box {
+  position: relative;
+
+  flex: 1;
+
+  max-width: 380px;
+}
+
+.search-box span {
+  position: absolute;
+
+  left: 12px;
+
+  top: 50%;
+
+  transform:
+    translateY(-50%);
+
+  color: #aaa;
+
+  font-size: 18px;
+}
+
+.search-box input {
+  padding-left: 35px;
+}
+
+.article-toolbar select {
+  width: auto;
+
+  min-width: 140px;
+}
+
+
+/* ==========================================
+   FORMS
+   ========================================== */
+
+.editor-layout {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    320px;
+
+  gap: 22px;
+
+  align-items: start;
+}
+
+.editor-main {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 22px;
+}
+
+.editor-sidebar {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 22px;
+
+  position: sticky;
+
+  top: 25px;
+}
+
+.editor-layout .panel {
+  padding: 0;
+}
+
+.editor-layout .panel > label,
+.editor-layout .panel > input,
+.editor-layout .panel > textarea,
+.editor-layout .panel > select,
+.editor-layout .panel > .slug-input,
+.editor-layout .panel > .image-preview {
+  margin-left: 23px;
+
+  margin-right: 23px;
+
+  width: calc(100% - 46px);
+}
+
+.editor-layout .panel > label {
+  margin-top: 19px;
+
+  margin-bottom: 7px;
 }
 
 label {
   display: block;
 
-  margin-top: 22px;
+  color: #423b4c;
 
-  margin-bottom: 8px;
+  font-size: 12px;
 
-  font-weight: bold;
+  font-weight: 650;
 }
 
 input,
@@ -1457,44 +2716,319 @@ textarea,
 select {
   width: 100%;
 
-  padding: 13px;
-
-  border: 1px solid #ddd;
+  border:
+    1px solid
+    #ddd8e3;
 
   border-radius: 8px;
 
-  font-size: 16px;
+  background: white;
+
+  color: var(--text);
+
+  padding: 11px 12px;
 
   font-family: inherit;
+
+  font-size: 13px;
+
+  outline: none;
+
+  transition:
+    border 0.15s,
+    box-shadow 0.15s;
 }
 
-textarea {
-  min-height: 150px;
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #9a7acb;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(111,75,184,0.08);
+}
+
+.title-input {
+  font-size: 21px;
+
+  font-weight: 600;
+
+  padding: 15px;
+}
+
+.excerpt-input {
+  min-height: 110px;
 
   resize: vertical;
 }
 
-textarea.content {
-  min-height: 420px;
+.content-editor {
+  min-height: 500px;
+
+  resize: vertical;
+
+  line-height: 1.7;
 }
 
-.form-buttons {
-  margin-top: 30px;
+.slug-input {
+  display: flex;
+
+  align-items: center;
+
+  border:
+    1px solid
+    #ddd8e3;
+
+  border-radius: 8px;
+
+  overflow: hidden;
 }
 
-@media (max-width: 700px) {
+.slug-input span {
+  padding: 11px 0 11px 12px;
 
-  .page-header {
-    flex-direction: column;
+  color: #99929f;
 
-    align-items: flex-start;
+  font-size: 12px;
+
+  background: #faf9fb;
+
+  white-space: nowrap;
+}
+
+.slug-input input {
+  border: 0;
+
+  border-radius: 0;
+
+  box-shadow: none !important;
+
+  padding-left: 7px;
+}
+
+.publish-button {
+  width: calc(100% - 46px);
+
+  margin:
+    20px 23px 23px;
+
+  border: 0;
+
+  border-radius: 8px;
+
+  background: var(--purple);
+
+  color: white;
+
+  padding: 12px;
+
+  font-size: 13px;
+
+  font-weight: 650;
+
+  cursor: pointer;
+}
+
+.publish-button:hover {
+  background: var(--purple-dark);
+}
+
+.seo-badge {
+  border-radius: 6px;
+
+  background: var(--purple-light);
+
+  color: var(--purple);
+
+  padding: 5px 7px;
+
+  font-size: 9px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.7px;
+}
+
+.image-preview {
+  margin-top: 12px !important;
+
+  border-radius: 9px;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    var(--border);
+}
+
+.image-preview img {
+  width: 100%;
+
+  display: block;
+
+  max-height: 190px;
+
+  object-fit: cover;
+}
+
+
+/* ==========================================
+   EMPTY STATE
+   ========================================== */
+
+.empty-state {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 25px;
+}
+
+.empty-icon {
+  width: 48px;
+  height: 48px;
+
+  border-radius: 13px;
+
+  background: var(--purple-light);
+
+  color: var(--purple);
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-size: 21px;
+
+  margin-bottom: 12px;
+}
+
+.empty-state h3 {
+  font-size: 15px;
+}
+
+.empty-state p {
+  margin-bottom: 17px;
+}
+
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+
+@media (max-width: 1050px) {
+
+  .content-grid {
+    grid-template-columns: 1fr;
   }
 
-  th:nth-child(2),
-  td:nth-child(2),
-  th:nth-child(4),
-  td:nth-child(4) {
+  .editor-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .editor-sidebar {
+    position: static;
+
+    display: grid;
+
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+}
+
+
+@media (max-width: 800px) {
+
+  .sidebar {
+    width: 68px;
+  }
+
+  .brand {
+    justify-content: center;
+
+    padding: 0;
+  }
+
+  .brand-name,
+  .brand-subtitle,
+  .nav-label,
+  .nav-link span:not(.nav-icon),
+  .site-link span {
     display: none;
+  }
+
+  .nav-link {
+    justify-content: center;
+
+    padding: 12px;
+  }
+
+  .nav-icon {
+    width: auto;
+  }
+
+  .main-area {
+    margin-left: 68px;
+
+    width: calc(100% - 68px);
+  }
+
+  .topbar {
+    padding: 0 20px;
+  }
+
+  .content {
+    padding: 28px 20px 50px;
+  }
+
+}
+
+
+@media (max-width: 650px) {
+
+  .welcome-row,
+  .page-title-row {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .editor-sidebar {
+    grid-template-columns: 1fr;
+  }
+
+  .article-toolbar {
+    flex-direction: column;
+
+    align-items: stretch;
+  }
+
+  .search-box {
+    max-width: none;
+  }
+
+  .article-toolbar select {
+    width: 100%;
+  }
+
+  .admin-info {
+    display: none;
+  }
+
+  h1 {
+    font-size: 27px;
   }
 
 }
@@ -1505,19 +3039,229 @@ textarea.content {
 
 <body>
 
-<header>
+<div class="admin-shell">
 
-<a href="/admin/${ADMIN_KEY}">
-<strong>Psychic Index</strong>
-</a>
 
-</header>
+  <aside class="sidebar">
 
-<main>
+    <a
+      class="brand"
+      href="${adminPath}"
+    >
 
-${content}
+      <div class="brand-symbol">
+        ✦
+      </div>
 
-</main>
+      <div>
+
+        <div class="brand-name">
+          Psychic Index
+        </div>
+
+        <span class="brand-subtitle">
+          Administration
+        </span>
+
+      </div>
+
+    </a>
+
+
+    <nav class="nav">
+
+      <div class="nav-label">
+        Workspace
+      </div>
+
+
+      <a
+        class="nav-link ${active === "dashboard" ? "active" : ""}"
+        href="${adminPath}"
+      >
+
+        <span class="nav-icon">
+          ⌂
+        </span>
+
+        <span>
+          Dashboard
+        </span>
+
+      </a>
+
+
+      <a
+        class="nav-link ${active === "articles" ? "active" : ""}"
+        href="${adminPath}/articles"
+      >
+
+        <span class="nav-icon">
+          ✎
+        </span>
+
+        <span>
+          Articles
+        </span>
+
+      </a>
+
+
+      <div class="nav-label" style="margin-top:24px;">
+        Directory
+      </div>
+
+
+      <div class="nav-link disabled">
+
+        <span class="nav-icon">
+          ♢
+        </span>
+
+        <span>
+          Psychics
+        </span>
+
+        <span class="coming">
+          Soon
+        </span>
+
+      </div>
+
+
+      <div class="nav-link disabled">
+
+        <span class="nav-icon">
+          ★
+        </span>
+
+        <span>
+          Reviews
+        </span>
+
+        <span class="coming">
+          Soon
+        </span>
+
+      </div>
+
+
+      <div class="nav-label" style="margin-top:24px;">
+        Website
+      </div>
+
+
+      <div class="nav-link disabled">
+
+        <span class="nav-icon">
+          ◈
+        </span>
+
+        <span>
+          Categories
+        </span>
+
+        <span class="coming">
+          Soon
+        </span>
+
+      </div>
+
+
+      <div class="nav-link disabled">
+
+        <span class="nav-icon">
+          ◫
+        </span>
+
+        <span>
+          Media
+        </span>
+
+        <span class="coming">
+          Soon
+        </span>
+
+      </div>
+
+
+      <div class="nav-link disabled">
+
+        <span class="nav-icon">
+          ◌
+        </span>
+
+        <span>
+          SEO
+        </span>
+
+        <span class="coming">
+          Soon
+        </span>
+
+      </div>
+
+    </nav>
+
+
+    <div class="sidebar-bottom">
+
+      <a
+        class="site-link"
+        href="/"
+      >
+
+        <span>
+          ↗
+        </span>
+
+        <span>
+          View Website
+        </span>
+
+      </a>
+
+    </div>
+
+  </aside>
+
+
+  <div class="main-area">
+
+    <header class="topbar">
+
+      <div class="admin-profile">
+
+        <div class="admin-avatar">
+          A
+        </div>
+
+        <div class="admin-info">
+
+          <strong>
+            Administrator
+          </strong>
+
+          <span>
+            Psychic Index
+          </span>
+
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <main class="content">
+
+      ${content}
+
+    </main>
+
+  </div>
+
+</div>
 
 </body>
 
@@ -1527,7 +3271,7 @@ ${content}
 
 
 // ==========================================
-// PUBLIC ARTICLE PAGE
+// PUBLIC ARTICLE
 // ==========================================
 
 function articlePage(article) {
@@ -1591,14 +3335,14 @@ ${
 ${
   article.featured_image
     ? `
-    <img
-      src="${escapeHtml(article.featured_image)}"
-      alt="${title}"
-      style="
-        max-width:100%;
-        height:auto;
-      "
-    >
+      <img
+        src="${escapeHtml(article.featured_image)}"
+        alt="${title}"
+        style="
+          max-width:100%;
+          height:auto;
+        "
+      >
     `
     : ""
 }
@@ -1606,9 +3350,9 @@ ${
 ${
   article.excerpt
     ? `
-    <p>
-      ${escapeHtml(article.excerpt)}
-    </p>
+      <p>
+        ${escapeHtml(article.excerpt)}
+      </p>
     `
     : ""
 }
@@ -1636,7 +3380,7 @@ ${content}
 
 
 // ==========================================
-// SLUG GENERATOR
+// HELPERS
 // ==========================================
 
 function createSlug(text) {
@@ -1647,10 +3391,6 @@ function createSlug(text) {
     .replace(/^-+|-+$/g, "");
 }
 
-
-// ==========================================
-// DATE FORMAT
-// ==========================================
 
 function formatDate(value) {
   if (!value) {
@@ -1674,9 +3414,19 @@ function formatDate(value) {
 }
 
 
-// ==========================================
-// ERROR MESSAGE
-// ==========================================
+function statusBadge(status) {
+  const safeStatus =
+    status === "published"
+      ? "published"
+      : "draft";
+
+  return `
+    <span class="status ${safeStatus}">
+      ${safeStatus}
+    </span>
+  `;
+}
+
 
 function errorMessage(error) {
   if (!error) {
@@ -1690,10 +3440,6 @@ function errorMessage(error) {
   return String(error);
 }
 
-
-// ==========================================
-// HTML ESCAPING
-// ==========================================
 
 function escapeHtml(value) {
   return String(value)
