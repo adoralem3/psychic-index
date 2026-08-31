@@ -21,6 +21,20 @@ function fromBase64(value) {
   );
 }
 
+function constantTimeEqual(a, b) {
+  if (a.length !== b.length) {
+    return false;
+  }
+
+  let difference = 0;
+
+  for (let i = 0; i < a.length; i++) {
+    difference |= a[i] ^ b[i];
+  }
+
+  return difference === 0;
+}
+
 export async function hashPassword(password) {
   const encoder = new TextEncoder();
 
@@ -32,9 +46,7 @@ export async function hashPassword(password) {
     await crypto.subtle.importKey(
       "raw",
       encoder.encode(password),
-      {
-        name: "PBKDF2"
-      },
+      "PBKDF2",
       false,
       ["deriveBits"]
     );
@@ -96,15 +108,20 @@ export async function verifyPassword(
     const expectedHash =
       fromBase64(expectedHashBase64);
 
+    if (
+      salt.length !== 16 ||
+      expectedHash.length !== HASH_LENGTH
+    ) {
+      return false;
+    }
+
     const encoder = new TextEncoder();
 
     const keyMaterial =
       await crypto.subtle.importKey(
         "raw",
         encoder.encode(password),
-        {
-          name: "PBKDF2"
-        },
+        "PBKDF2",
         false,
         ["deriveBits"]
       );
@@ -124,14 +141,7 @@ export async function verifyPassword(
     const actualHash =
       new Uint8Array(derivedBits);
 
-    if (
-      actualHash.length !==
-      expectedHash.length
-    ) {
-      return false;
-    }
-
-    return crypto.subtle.timingSafeEqual(
+    return constantTimeEqual(
       actualHash,
       expectedHash
     );
