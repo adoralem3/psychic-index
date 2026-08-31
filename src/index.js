@@ -1,4 +1,3 @@
-```javascript
 const ADMIN_KEY = "PX9-vQ72-Lm4!zK81-Rt6";
 
 export default {
@@ -11,27 +10,25 @@ export default {
     // ==========================================
 
     if (url.pathname === "/api/health") {
-      let database = "connected";
-
       try {
         await env.DB.prepare("SELECT 1").run();
-      } catch (error) {
-        database = "error";
-      }
 
-      return new Response(
-        JSON.stringify({
+        return Response.json({
           status: "ok",
           site: "Psychic Index",
-          database
-        }),
-        {
-          status: 200,
-          headers: {
-            "Content-Type": "application/json; charset=UTF-8"
-          }
-        }
-      );
+          database: "connected"
+        });
+      } catch (error) {
+        return Response.json(
+          {
+            status: "error",
+            site: "Psychic Index",
+            database: "error",
+            message: errorMessage(error)
+          },
+          { status: 500 }
+        );
+      }
     }
 
     // ==========================================
@@ -97,20 +94,15 @@ export default {
     if (url.pathname.startsWith("/api/articles/")) {
       const slug = decodeURIComponent(
         url.pathname.substring("/api/articles/".length)
-      );
+      ).replace(/\/$/, "");
 
       if (!slug) {
-        return new Response(
-          JSON.stringify({
+        return Response.json(
+          {
             status: "error",
             message: "Article slug is missing."
-          }),
-          {
-            status: 400,
-            headers: {
-              "Content-Type": "application/json"
-            }
-          }
+          },
+          { status: 400 }
         );
       }
 
@@ -139,17 +131,12 @@ export default {
           .first();
 
         if (!article) {
-          return new Response(
-            JSON.stringify({
+          return Response.json(
+            {
               status: "error",
               message: "Article not found."
-            }),
-            {
-              status: 404,
-              headers: {
-                "Content-Type": "application/json"
-              }
-            }
+            },
+            { status: 404 }
           );
         }
 
@@ -167,17 +154,12 @@ export default {
           }
         );
       } catch (error) {
-        return new Response(
-          JSON.stringify({
+        return Response.json(
+          {
             status: "error",
             message: "Could not load article."
-          }),
-          {
-            status: 500,
-            headers: {
-              "Content-Type": "application/json; charset=UTF-8"
-            }
-          }
+          },
+          { status: 500 }
         );
       }
     }
@@ -261,7 +243,7 @@ export default {
 
     if (url.pathname.startsWith("/articles/")) {
       const slug = url.pathname
-        .replace("/articles/", "")
+        .substring("/articles/".length)
         .replace(/\/$/, "");
 
       if (!slug) {
@@ -281,10 +263,7 @@ export default {
 
         if (!article) {
           return new Response("Article not found.", {
-            status: 404,
-            headers: {
-              "Content-Type": "text/plain; charset=UTF-8"
-            }
+            status: 404
           });
         }
 
@@ -395,9 +374,7 @@ async function adminDashboard(env, adminPath) {
         `
           <div class="welcome-row">
             <div>
-              <div class="eyebrow">
-                ADMINISTRATION
-              </div>
+              <div class="eyebrow">ADMINISTRATION</div>
 
               <h1>Good afternoon</h1>
 
@@ -418,9 +395,7 @@ async function adminDashboard(env, adminPath) {
           <div class="stats-grid">
 
             <div class="stat-card">
-              <div class="stat-icon purple">
-                ✦
-              </div>
+              <div class="stat-icon purple">✦</div>
 
               <div>
                 <div class="stat-number">
@@ -434,9 +409,7 @@ async function adminDashboard(env, adminPath) {
             </div>
 
             <div class="stat-card">
-              <div class="stat-icon green">
-                ✓
-              </div>
+              <div class="stat-icon green">✓</div>
 
               <div>
                 <div class="stat-number">
@@ -450,9 +423,7 @@ async function adminDashboard(env, adminPath) {
             </div>
 
             <div class="stat-card">
-              <div class="stat-icon amber">
-                ◷
-              </div>
+              <div class="stat-icon amber">◷</div>
 
               <div>
                 <div class="stat-number">
@@ -529,77 +500,45 @@ async function adminDashboard(env, adminPath) {
                   href="${adminPath}/articles/new"
                   class="quick-action"
                 >
-                  <div class="quick-icon">
-                    ✎
-                  </div>
+                  <div class="quick-icon">✎</div>
 
                   <div>
-                    <strong>
-                      Write an article
-                    </strong>
-
-                    <span>
-                      Create new content
-                    </span>
+                    <strong>Write an article</strong>
+                    <span>Create new content</span>
                   </div>
 
-                  <span class="arrow">
-                    →
-                  </span>
+                  <span class="arrow">→</span>
                 </a>
 
                 <a
                   href="${adminPath}/articles"
                   class="quick-action"
                 >
-                  <div class="quick-icon">
-                    ☰
-                  </div>
+                  <div class="quick-icon">☰</div>
 
                   <div>
-                    <strong>
-                      Manage articles
-                    </strong>
-
-                    <span>
-                      Edit existing content
-                    </span>
+                    <strong>Manage articles</strong>
+                    <span>Edit existing content</span>
                   </div>
 
-                  <span class="arrow">
-                    →
-                  </span>
+                  <span class="arrow">→</span>
                 </a>
 
                 <div class="quick-action disabled">
-                  <div class="quick-icon">
-                    ♢
-                  </div>
+                  <div class="quick-icon">♢</div>
 
                   <div>
-                    <strong>
-                      Psychic listings
-                    </strong>
-
-                    <span>
-                      Coming soon
-                    </span>
+                    <strong>Psychic listings</strong>
+                    <span>Coming soon</span>
                   </div>
                 </div>
 
                 <div class="quick-action disabled">
-                  <div class="quick-icon">
-                    ★
-                  </div>
+                  <div class="quick-icon">★</div>
 
                   <div>
-                    <strong>
-                      Reviews
-                    </strong>
-
-                    <span>
-                      Coming soon
-                    </span>
+                    <strong>Reviews</strong>
+                    <span>Coming soon</span>
                   </div>
                 </div>
 
@@ -642,9 +581,9 @@ async function articlesPage(env, adminPath) {
         id,
         title,
         slug,
+        featured_image,
         category,
         status,
-        featured_image,
         created_at,
         updated_at
       FROM articles
@@ -662,6 +601,7 @@ async function articlesPage(env, adminPath) {
             <div class="article-title-cell">
 
               <div class="article-thumbnail">
+
                 ${
                   article.featured_image
                     ? `
@@ -672,6 +612,7 @@ async function articlesPage(env, adminPath) {
                     `
                     : "✦"
                 }
+
               </div>
 
               <div>
@@ -750,10 +691,8 @@ async function articlesPage(env, adminPath) {
     if (!rows) {
       rows = `
         <tr>
-          <td
-            colspan="5"
-            class="empty"
-          >
+          <td colspan="5" class="empty">
+
             <div class="empty-state">
 
               <div class="empty-icon">
@@ -776,6 +715,7 @@ async function articlesPage(env, adminPath) {
               </a>
 
             </div>
+
           </td>
         </tr>
       `;
@@ -817,9 +757,7 @@ async function articlesPage(env, adminPath) {
 
               <div class="search-box">
 
-                <span>
-                  ⌕
-                </span>
+                <span>⌕</span>
 
                 <input
                   id="articleSearch"
@@ -834,7 +772,6 @@ async function articlesPage(env, adminPath) {
                 id="statusFilter"
                 onchange="filterArticles()"
               >
-
                 <option value="">
                   All statuses
                 </option>
@@ -846,7 +783,6 @@ async function articlesPage(env, adminPath) {
                 <option value="draft">
                   Draft
                 </option>
-
               </select>
 
             </div>
@@ -992,11 +928,7 @@ function newArticlePage(adminPath) {
 // CREATE ARTICLE
 // ==========================================
 
-async function createArticle(
-  request,
-  env,
-  adminPath
-) {
+async function createArticle(request, env, adminPath) {
   try {
     const form = await request.formData();
 
@@ -1061,15 +993,8 @@ async function createArticle(
 
     if (duplicate) {
       return new Response(
-        "An article already uses the slug '" +
-          escapeHtml(slug) +
-          "'. Please choose another slug.",
-        {
-          status: 409,
-          headers: {
-            "Content-Type": "text/plain; charset=UTF-8"
-          }
-        }
+        "An article already uses this slug.",
+        { status: 409 }
       );
     }
 
@@ -1108,14 +1033,11 @@ async function createArticle(
       )
       .run();
 
-    const redirectUrl =
+    return Response.redirect(
       new URL(
         adminPath + "/articles",
         request.url
-      );
-
-    return Response.redirect(
-      redirectUrl.toString(),
+      ).toString(),
       303
     );
   } catch (error) {
@@ -1138,11 +1060,7 @@ async function createArticle(
 // EDIT ARTICLE PAGE
 // ==========================================
 
-async function editArticlePage(
-  env,
-  adminPath,
-  id
-) {
+async function editArticlePage(env, adminPath, id) {
   try {
     const article =
       await env.DB.prepare(`
@@ -1222,11 +1140,7 @@ async function editArticlePage(
 // UPDATE ARTICLE
 // ==========================================
 
-async function updateArticle(
-  request,
-  env,
-  adminPath
-) {
+async function updateArticle(request, env, adminPath) {
   try {
     const form = await request.formData();
 
@@ -1304,9 +1218,7 @@ async function updateArticle(
 
     if (!existing) {
       return new Response(
-        "Update error: Article ID " +
-          id +
-          " was not found.",
+        "Update error: Article was not found.",
         { status: 404 }
       );
     }
@@ -1327,22 +1239,14 @@ async function updateArticle(
         "Update error: Another article already uses the slug '" +
           slug +
           "'.",
-        {
-          status: 409,
-          headers: {
-            "Content-Type": "text/plain; charset=UTF-8"
-          }
-        }
+        { status: 409 }
       );
     }
 
     let publishedAt =
       existing.published_at || null;
 
-    if (
-      status === "published" &&
-      !publishedAt
-    ) {
+    if (status === "published" && !publishedAt) {
       publishedAt =
         new Date().toISOString();
     }
@@ -1388,27 +1292,16 @@ async function updateArticle(
       result.meta.changes === 0
     ) {
       return new Response(
-        "Update ran but no database row was changed.\n\n" +
-          "Article ID: " +
-          id,
-        {
-          status: 500,
-          headers: {
-            "Content-Type":
-              "text/plain; charset=UTF-8"
-          }
-        }
+        "Update ran but no database row was changed.",
+        { status: 500 }
       );
     }
 
-    const redirectUrl =
+    return Response.redirect(
       new URL(
         adminPath + "/articles",
         request.url
-      );
-
-    return Response.redirect(
-      redirectUrl.toString(),
+      ).toString(),
       303
     );
   } catch (error) {
@@ -1419,8 +1312,7 @@ async function updateArticle(
       {
         status: 500,
         headers: {
-          "Content-Type":
-            "text/plain; charset=UTF-8"
+          "Content-Type": "text/plain; charset=UTF-8"
         }
       }
     );
@@ -1432,11 +1324,7 @@ async function updateArticle(
 // DELETE ARTICLE
 // ==========================================
 
-async function deleteArticle(
-  request,
-  env,
-  adminPath
-) {
+async function deleteArticle(request, env, adminPath) {
   try {
     const form =
       await request.formData();
@@ -1451,32 +1339,18 @@ async function deleteArticle(
       );
     }
 
-    const result =
-      await env.DB.prepare(`
-        DELETE FROM articles
-        WHERE id = ?
-      `)
-        .bind(id)
-        .run();
+    await env.DB.prepare(`
+      DELETE FROM articles
+      WHERE id = ?
+    `)
+      .bind(id)
+      .run();
 
-    if (
-      result.meta &&
-      result.meta.changes === 0
-    ) {
-      return new Response(
-        "Article was not found.",
-        { status: 404 }
-      );
-    }
-
-    const redirectUrl =
+    return Response.redirect(
       new URL(
         adminPath + "/articles",
         request.url
-      );
-
-    return Response.redirect(
-      redirectUrl.toString(),
+      ).toString(),
       303
     );
   } catch (error) {
@@ -1486,8 +1360,7 @@ async function deleteArticle(
       {
         status: 500,
         headers: {
-          "Content-Type":
-            "text/plain; charset=UTF-8"
+          "Content-Type": "text/plain; charset=UTF-8"
         }
       }
     );
@@ -1501,9 +1374,7 @@ async function deleteArticle(
 
 function articleForm(action, article) {
   const value = (field) =>
-    escapeHtml(
-      article?.[field] ?? ""
-    );
+    escapeHtml(article?.[field] || "");
 
   const selected = (status) =>
     article?.status === status
@@ -1603,14 +1474,13 @@ function articleForm(action, article) {
 
         </section>
 
+
         <section class="panel">
 
           <div class="panel-header">
 
             <div>
-              <h2>
-                Search Engine Optimization
-              </h2>
+              <h2>Search Engine Optimization</h2>
 
               <p>
                 Help search engines understand your article.
@@ -1648,6 +1518,7 @@ function articleForm(action, article) {
         </section>
 
       </div>
+
 
       <aside class="editor-sidebar">
 
@@ -1699,6 +1570,7 @@ function articleForm(action, article) {
 
         </section>
 
+
         <section class="panel">
 
           <div class="panel-header">
@@ -1708,6 +1580,10 @@ function articleForm(action, article) {
             </div>
 
           </div>
+
+          <label for="category">
+            Category
+          </label>
 
           <select
             id="category"
@@ -1721,8 +1597,7 @@ function articleForm(action, article) {
             <option
               value="Psychic Readings"
               ${
-                article?.category ===
-                "Psychic Readings"
+                article?.category === "Psychic Readings"
                   ? "selected"
                   : ""
               }
@@ -1733,8 +1608,7 @@ function articleForm(action, article) {
             <option
               value="Psychic Websites"
               ${
-                article?.category ===
-                "Psychic Websites"
+                article?.category === "Psychic Websites"
                   ? "selected"
                   : ""
               }
@@ -1745,8 +1619,7 @@ function articleForm(action, article) {
             <option
               value="Astrology"
               ${
-                article?.category ===
-                "Astrology"
+                article?.category === "Astrology"
                   ? "selected"
                   : ""
               }
@@ -1757,8 +1630,7 @@ function articleForm(action, article) {
             <option
               value="Horoscopes"
               ${
-                article?.category ===
-                "Horoscopes"
+                article?.category === "Horoscopes"
                   ? "selected"
                   : ""
               }
@@ -1769,8 +1641,7 @@ function articleForm(action, article) {
             <option
               value="Spirituality"
               ${
-                article?.category ===
-                "Spirituality"
+                article?.category === "Spirituality"
                   ? "selected"
                   : ""
               }
@@ -1781,8 +1652,7 @@ function articleForm(action, article) {
             <option
               value="Reviews"
               ${
-                article?.category ===
-                "Reviews"
+                article?.category === "Reviews"
                   ? "selected"
                   : ""
               }
@@ -1793,6 +1663,7 @@ function articleForm(action, article) {
           </select>
 
         </section>
+
 
         <section class="panel">
 
@@ -1807,6 +1678,10 @@ function articleForm(action, article) {
             </div>
 
           </div>
+
+          <label for="featured_image">
+            Image URL
+          </label>
 
           <input
             id="featured_image"
@@ -1844,12 +1719,7 @@ function articleForm(action, article) {
 // ADMIN LAYOUT
 // ==========================================
 
-function adminLayout(
-  title,
-  active,
-  adminPath,
-  content
-) {
+function adminLayout(title, active, adminPath, content) {
   return `
 <!DOCTYPE html>
 
@@ -1934,9 +1804,7 @@ a {
   align-items: center;
   gap: 12px;
   padding: 0 24px;
-  border-bottom:
-    1px solid
-    rgba(255,255,255,0.08);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
   text-decoration: none;
 }
 
@@ -1947,19 +1815,13 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
-  background:
-    linear-gradient(
-      135deg,
-      #8b67d0,
-      #6542a6
-    );
+  background: linear-gradient(135deg,#8b67d0,#6542a6);
   font-size: 20px;
 }
 
 .brand-name {
   font-size: 17px;
   font-weight: 700;
-  letter-spacing: -0.2px;
 }
 
 .brand-subtitle {
@@ -1994,28 +1856,22 @@ a {
   text-decoration: none;
   color: rgba(255,255,255,0.68);
   font-size: 14px;
-  transition:
-    background 0.15s,
-    color 0.15s;
 }
 
 .nav-link:hover {
   color: white;
-  background:
-    rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.07);
 }
 
 .nav-link.active {
   color: white;
-  background:
-    rgba(123,91,190,0.32);
+  background: rgba(123,91,190,0.32);
 }
 
 .nav-icon {
   width: 21px;
   text-align: center;
   font-size: 16px;
-  opacity: 0.9;
 }
 
 .nav-link.disabled {
@@ -2027,16 +1883,13 @@ a {
   margin-left: auto;
   font-size: 9px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
   opacity: 0.55;
 }
 
 .sidebar-bottom {
   margin-top: auto;
   padding: 16px 14px 20px;
-  border-top:
-    1px solid
-    rgba(255,255,255,0.08);
+  border-top: 1px solid rgba(255,255,255,0.08);
 }
 
 .site-link {
@@ -2052,8 +1905,7 @@ a {
 
 .site-link:hover {
   color: white;
-  background:
-    rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.06);
 }
 
 .main-area {
@@ -2065,9 +1917,7 @@ a {
 .topbar {
   height: 82px;
   background: white;
-  border-bottom:
-    1px solid
-    var(--border);
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -2128,7 +1978,6 @@ h1 {
 h2 {
   margin: 0;
   font-size: 16px;
-  letter-spacing: -0.2px;
 }
 
 h3 {
@@ -2156,14 +2005,10 @@ p {
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
-  transition:
-    background 0.15s,
-    transform 0.15s;
 }
 
 .primary-button:hover {
   background: var(--purple-dark);
-  transform: translateY(-1px);
 }
 
 .secondary-button {
@@ -2197,8 +2042,7 @@ p {
 
 .stats-grid {
   display: grid;
-  grid-template-columns:
-    repeat(3, 1fr);
+  grid-template-columns: repeat(3,1fr);
   gap: 18px;
   margin-bottom: 22px;
 }
@@ -2241,7 +2085,6 @@ p {
 .stat-number {
   font-size: 27px;
   font-weight: 750;
-  letter-spacing: -1px;
 }
 
 .stat-label {
@@ -2252,17 +2095,13 @@ p {
 
 .content-grid {
   display: grid;
-  grid-template-columns:
-    minmax(0, 1.65fr)
-    minmax(280px, 0.75fr);
+  grid-template-columns: minmax(0,1.65fr) minmax(280px,0.75fr);
   gap: 22px;
 }
 
 .panel {
   background: white;
-  border:
-    1px solid
-    var(--border);
+  border: 1px solid var(--border);
   border-radius: 13px;
   overflow: hidden;
 }
@@ -2273,9 +2112,7 @@ p {
   align-items: center;
   justify-content: space-between;
   gap: 15px;
-  border-bottom:
-    1px solid
-    var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 .table-wrapper {
@@ -2294,15 +2131,12 @@ th {
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  font-weight: 650;
   background: #fcfbfd;
 }
 
 td {
   padding: 15px 22px;
-  border-top:
-    1px solid
-    #f0edf3;
+  border-top: 1px solid #f0edf3;
   font-size: 12px;
   color: #4e4858;
 }
@@ -2430,7 +2264,6 @@ td {
   padding: 12px 10px;
   border-radius: 9px;
   text-decoration: none;
-  transition: background 0.15s;
 }
 
 .quick-action:hover {
@@ -2439,7 +2272,6 @@ td {
 
 .quick-action.disabled {
   opacity: 0.45;
-  cursor: default;
 }
 
 .quick-icon {
@@ -2477,9 +2309,7 @@ td {
   align-items: center;
   gap: 10px;
   padding: 17px 20px;
-  border-bottom:
-    1px solid
-    var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 .search-box {
@@ -2492,8 +2322,7 @@ td {
   position: absolute;
   left: 12px;
   top: 50%;
-  transform:
-    translateY(-50%);
+  transform: translateY(-50%);
   color: #aaa;
   font-size: 18px;
 }
@@ -2509,9 +2338,7 @@ td {
 
 .editor-layout {
   display: grid;
-  grid-template-columns:
-    minmax(0, 1fr)
-    320px;
+  grid-template-columns: minmax(0,1fr) 320px;
   gap: 22px;
   align-items: start;
 }
@@ -2561,9 +2388,7 @@ input,
 textarea,
 select {
   width: 100%;
-  border:
-    1px solid
-    #ddd8e3;
+  border: 1px solid #ddd8e3;
   border-radius: 8px;
   background: white;
   color: var(--text);
@@ -2571,18 +2396,13 @@ select {
   font-family: inherit;
   font-size: 13px;
   outline: none;
-  transition:
-    border 0.15s,
-    box-shadow 0.15s;
 }
 
 input:focus,
 textarea:focus,
 select:focus {
   border-color: #9a7acb;
-  box-shadow:
-    0 0 0 3px
-    rgba(111,75,184,0.08);
+  box-shadow: 0 0 0 3px rgba(111,75,184,0.08);
 }
 
 .title-input {
@@ -2605,9 +2425,7 @@ select:focus {
 .slug-input {
   display: flex;
   align-items: center;
-  border:
-    1px solid
-    #ddd8e3;
+  border: 1px solid #ddd8e3;
   border-radius: 8px;
   overflow: hidden;
 }
@@ -2629,8 +2447,7 @@ select:focus {
 
 .publish-button {
   width: calc(100% - 46px);
-  margin:
-    20px 23px 23px;
+  margin: 20px 23px 23px;
   border: 0;
   border-radius: 8px;
   background: var(--purple);
@@ -2652,16 +2469,13 @@ select:focus {
   padding: 5px 7px;
   font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.7px;
 }
 
 .image-preview {
   margin-top: 12px !important;
   border-radius: 9px;
   overflow: hidden;
-  border:
-    1px solid
-    var(--border);
+  border: 1px solid var(--border);
 }
 
 .image-preview img {
@@ -2713,8 +2527,7 @@ select:focus {
   .editor-sidebar {
     position: static;
     display: grid;
-    grid-template-columns:
-      repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2,minmax(0,1fr));
   }
 
 }
@@ -2841,11 +2654,7 @@ select:focus {
       </div>
 
       <a
-        class="nav-link ${
-          active === "dashboard"
-            ? "active"
-            : ""
-        }"
+        class="nav-link ${active === "dashboard" ? "active" : ""}"
         href="${adminPath}"
       >
 
@@ -2860,11 +2669,7 @@ select:focus {
       </a>
 
       <a
-        class="nav-link ${
-          active === "articles"
-            ? "active"
-            : ""
-        }"
+        class="nav-link ${active === "articles" ? "active" : ""}"
         href="${adminPath}/articles"
       >
 
@@ -2878,10 +2683,7 @@ select:focus {
 
       </a>
 
-      <div
-        class="nav-label"
-        style="margin-top:24px;"
-      >
+      <div class="nav-label" style="margin-top:24px;">
         Directory
       </div>
 
@@ -2917,10 +2719,7 @@ select:focus {
 
       </div>
 
-      <div
-        class="nav-label"
-        style="margin-top:24px;"
-      >
+      <div class="nav-label" style="margin-top:24px;">
         Website
       </div>
 
@@ -3049,14 +2848,14 @@ function articlePage(article) {
   const description =
     escapeHtml(
       article.seo_description ||
-      article.excerpt ||
-      ""
+        article.excerpt ||
+        ""
     );
 
   const seoTitle =
     escapeHtml(
       article.seo_title ||
-      article.title
+        article.title
     );
 
   const content =
@@ -3108,9 +2907,9 @@ main {
 
 article {
   background: white;
-  border: 1px solid #e8e5ed;
-  border-radius: 16px;
   padding: 45px;
+  border-radius: 18px;
+  border: 1px solid #e8e5ed;
 }
 
 h1 {
@@ -3121,45 +2920,43 @@ h1 {
 
 .category {
   color: #6f4bb8;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
   margin-bottom: 25px;
 }
 
 .featured-image {
   width: 100%;
-  max-height: 500px;
-  object-fit: cover;
+  height: auto;
+  display: block;
   border-radius: 12px;
-  margin: 20px 0 25px;
+  margin: 25px 0;
 }
 
 .excerpt {
   font-size: 18px;
-  line-height: 1.7;
-  color: #777181;
+  line-height: 1.6;
+  color: #66606f;
   margin-bottom: 30px;
 }
 
 .article-content {
   font-size: 16px;
-  line-height: 1.9;
+  line-height: 1.8;
 }
 
-@media (max-width: 650px) {
+@media (max-width: 600px) {
 
   main {
-    padding: 25px 15px;
+    padding: 20px 12px;
   }
 
   article {
-    padding: 25px;
+    padding: 25px 20px;
   }
 
   h1 {
-    font-size: 30px;
+    font-size: 31px;
   }
 
 }
@@ -3174,6 +2971,10 @@ h1 {
 
 <article>
 
+<h1>
+${title}
+</h1>
+
 ${
   article.category
     ? `
@@ -3183,10 +2984,6 @@ ${
     `
     : ""
 }
-
-<h1>
-  ${title}
-</h1>
 
 ${
   article.featured_image
@@ -3211,7 +3008,7 @@ ${
 }
 
 <div class="article-content">
-  ${content}
+${content}
 </div>
 
 </article>
@@ -3222,7 +3019,6 @@ ${
 
 </html>`,
     {
-      status: 200,
       headers: {
         "Content-Type":
           "text/html; charset=UTF-8"
@@ -3302,4 +3098,3 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
-```
