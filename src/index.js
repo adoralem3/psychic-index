@@ -191,6 +191,7 @@ async function adminDashboard(env, adminPath) {
 
         <div class="card">
           <h2>📝 Articles</h2>
+
           <p>
             Write, edit and manage your articles.
           </p>
@@ -396,7 +397,7 @@ async function articlesPage(env, adminPath) {
 
 
 // ==========================================
-// NEW ARTICLE
+// NEW ARTICLE PAGE
 // ==========================================
 
 function newArticlePage(adminPath) {
@@ -610,7 +611,7 @@ async function updateArticle(
   const form = await request.formData();
 
   const id =
-    String(form.get("id") || "");
+    String(form.get("id") || "").trim();
 
   const title =
     String(form.get("title") || "").trim();
@@ -654,11 +655,29 @@ async function updateArticle(
     );
   }
 
-  // ------------------------------------------
-  // IMPORTANT:
-  // Check whether another article already
-  // owns this slug.
-  // ------------------------------------------
+  // Check that the article actually exists.
+
+  const existing =
+    await env.DB.prepare(
+      `SELECT
+        id,
+        published_at
+       FROM articles
+       WHERE id = ?
+       LIMIT 1`
+    )
+      .bind(id)
+      .first();
+
+  if (!existing) {
+    return new Response(
+      "Article not found.",
+      { status: 404 }
+    );
+  }
+
+  // Make sure another article does not
+  // already use this slug.
 
   const duplicate =
     await env.DB.prepare(
@@ -673,25 +692,8 @@ async function updateArticle(
 
   if (duplicate) {
     return new Response(
-      "Could not update article. Another article already uses this URL slug.",
+      "Another article already uses this URL slug.",
       { status: 409 }
-    );
-  }
-
-  const existing =
-    await env.DB.prepare(
-      `SELECT published_at
-       FROM articles
-       WHERE id = ?
-       LIMIT 1`
-    )
-      .bind(id)
-      .first();
-
-  if (!existing) {
-    return new Response(
-      "Article not found.",
-      { status: 404 }
     );
   }
 
@@ -723,8 +725,7 @@ async function updateArticle(
          seo_title = ?,
          seo_description = ?,
          status = ?,
-         published_at = ?,
-         updated_at = CURRENT_TIMESTAMP
+         published_at = ?
        WHERE id = ?`
     )
       .bind(
@@ -769,7 +770,7 @@ async function deleteArticle(
     await request.formData();
 
   const id =
-    String(form.get("id") || "");
+    String(form.get("id") || "").trim();
 
   if (!id) {
     return new Response(
@@ -820,7 +821,7 @@ function articleForm(action, article) {
           <input
             type="hidden"
             name="id"
-            value="${article.id}"
+            value="${escapeHtml(article.id)}"
           >
           `
           : ""
@@ -1080,6 +1081,7 @@ p {
 
 .grid {
   display: grid;
+
   grid-template-columns:
     repeat(
       auto-fit,
@@ -1087,6 +1089,7 @@ p {
     );
 
   gap: 20px;
+
   margin-top: 30px;
 }
 
@@ -1095,7 +1098,9 @@ p {
 .table-card,
 .form-card {
   background: white;
+
   border-radius: 15px;
+
   box-shadow:
     0 5px 25px
     rgba(0,0,0,0.06);
@@ -1107,6 +1112,7 @@ p {
 
 .stats {
   display: grid;
+
   grid-template-columns:
     repeat(
       auto-fit,
@@ -1114,6 +1120,7 @@ p {
     );
 
   gap: 20px;
+
   margin: 30px 0;
 }
 
@@ -1123,7 +1130,9 @@ p {
 
 .stat strong {
   display: block;
+
   font-size: 32px;
+
   margin-bottom: 8px;
 }
 
@@ -1134,21 +1143,33 @@ p {
 .button,
 button {
   display: inline-block;
+
   border: 0;
+
   border-radius: 8px;
+
   background: #222;
+
   color: white;
+
   padding: 12px 18px;
+
   font-size: 15px;
+
   text-decoration: none;
+
   cursor: pointer;
 }
 
 .page-header {
   display: flex;
+
   align-items: center;
+
   justify-content: space-between;
+
   gap: 20px;
+
   margin-bottom: 25px;
 }
 
@@ -1158,26 +1179,35 @@ button {
 
 table {
   width: 100%;
+
   border-collapse: collapse;
 }
 
 th,
 td {
   padding: 16px;
+
   text-align: left;
-  border-bottom: 1px solid #eee;
+
+  border-bottom:
+    1px solid #eee;
 }
 
 th {
   font-size: 14px;
+
   color: #666;
 }
 
 .status {
   display: inline-block;
+
   padding: 6px 10px;
+
   border-radius: 20px;
+
   font-size: 13px;
+
   text-transform: capitalize;
 }
 
@@ -1191,7 +1221,9 @@ th {
 
 .actions {
   display: flex;
+
   gap: 8px;
+
   align-items: center;
 }
 
@@ -1202,30 +1234,39 @@ th {
 .small-button,
 .delete-button {
   padding: 8px 12px;
+
   font-size: 13px;
 }
 
 .small-button {
   background: #eee;
+
   color: #222;
+
   border-radius: 7px;
+
   text-decoration: none;
 }
 
 .delete-button {
   background: #eee;
+
   color: #222;
 }
 
 .form-card {
   padding: 35px;
+
   max-width: 900px;
 }
 
 label {
   display: block;
+
   margin-top: 22px;
+
   margin-bottom: 8px;
+
   font-weight: bold;
 }
 
@@ -1233,15 +1274,21 @@ input,
 textarea,
 select {
   width: 100%;
+
   padding: 13px;
+
   border: 1px solid #ddd;
+
   border-radius: 8px;
+
   font-size: 16px;
+
   font-family: inherit;
 }
 
 textarea {
   min-height: 150px;
+
   resize: vertical;
 }
 
@@ -1257,6 +1304,7 @@ textarea.content {
 
   .page-header {
     flex-direction: column;
+
     align-items: flex-start;
   }
 
@@ -1397,7 +1445,8 @@ ${content}
 
     {
       headers: {
-        "Content-Type": "text/html; charset=UTF-8"
+        "Content-Type":
+          "text/html; charset=UTF-8"
       }
     }
   );
