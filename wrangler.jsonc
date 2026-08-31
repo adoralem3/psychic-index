@@ -1,13 +1,13 @@
+```json
 {
+  "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "psychic-index",
   "main": "src/index.js",
   "compatibility_date": "2026-08-31",
 
   "assets": {
     "directory": "./public",
-    "run_worker_first": [
-      "/api/*"
-    ]
+    "binding": "ASSETS"
   },
 
   "d1_databases": [
@@ -18,3 +18,4 @@
     }
   ]
 }
+```
