@@ -107,23 +107,37 @@ export default {
         .replace("/articles/", "")
         .replace(/\/$/, "");
 
-      const article = await env.DB.prepare(
-        `SELECT *
-         FROM articles
-         WHERE slug = ?
-         AND status = 'published'
-         LIMIT 1`
-      )
-        .bind(slug)
-        .first();
+      try {
+        const article = await env.DB.prepare(
+          `SELECT *
+           FROM articles
+           WHERE slug = ?
+           AND status = 'published'
+           LIMIT 1`
+        )
+          .bind(slug)
+          .first();
 
-      if (!article) {
-        return new Response("Article not found.", {
-          status: 404
-        });
+        if (!article) {
+          return new Response("Article not found.", {
+            status: 404
+          });
+        }
+
+        return articlePage(article);
+
+      } catch (error) {
+        return new Response(
+          "Could not load article.\n\n" +
+          errorMessage(error),
+          {
+            status: 500,
+            headers: {
+              "Content-Type": "text/plain; charset=UTF-8"
+            }
+          }
+        );
       }
-
-      return articlePage(article);
     }
 
     // ==========================================
@@ -242,9 +256,14 @@ async function adminDashboard(env, adminPath) {
 
   } catch (error) {
     return new Response(
-      "Dashboard database error: " +
+      "Dashboard database error:\n\n" +
       errorMessage(error),
-      { status: 500 }
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "text/plain; charset=UTF-8"
+        }
+      }
     );
   }
 }
@@ -264,6 +283,7 @@ async function articlesPage(env, adminPath) {
         category,
         status,
         created_at,
+        updated_at,
         published_at
       FROM articles
       ORDER BY created_at DESC`
@@ -278,6 +298,7 @@ async function articlesPage(env, adminPath) {
           : "draft";
 
       const date =
+        article.updated_at ||
         article.published_at ||
         article.created_at ||
         "";
@@ -383,7 +404,7 @@ async function articlesPage(env, adminPath) {
                 <th>Title</th>
                 <th>Category</th>
                 <th>Status</th>
-                <th>Date</th>
+                <th>Last Updated</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -406,9 +427,14 @@ async function articlesPage(env, adminPath) {
 
   } catch (error) {
     return new Response(
-      "Articles database error: " +
+      "Articles database error:\n\n" +
       errorMessage(error),
-      { status: 500 }
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "text/plain; charset=UTF-8"
+        }
+      }
     );
   }
 }
@@ -546,15 +572,24 @@ async function createArticle(
       )
       .run();
 
+    // IMPORTANT:
+    // Redirect must use an absolute URL.
+
+    const redirectUrl =
+      new URL(
+        adminPath + "/articles",
+        request.url
+      );
+
     return Response.redirect(
-      adminPath + "/articles",
+      redirectUrl.toString(),
       303
     );
 
   } catch (error) {
     return new Response(
       "Could not save article.\n\n" +
-      "DATABASE ERROR:\n" +
+      "DATABASE ERROR:\n\n" +
       errorMessage(error),
       {
         status: 500,
@@ -626,7 +661,7 @@ async function editArticlePage(
   } catch (error) {
     return new Response(
       "Could not load article.\n\n" +
-      "DATABASE ERROR:\n" +
+      "DATABASE ERROR:\n\n" +
       errorMessage(error),
       {
         status: 500,
@@ -690,7 +725,7 @@ async function updateArticle(
         : "draft";
 
     // ------------------------------------------
-    // BASIC VALIDATION
+    // VALIDATION
     // ------------------------------------------
 
     if (!id) {
@@ -741,7 +776,7 @@ async function updateArticle(
     }
 
     // ------------------------------------------
-    // CHECK SLUG
+    // CHECK FOR DUPLICATE SLUG
     // ------------------------------------------
 
     const duplicate =
@@ -784,7 +819,7 @@ async function updateArticle(
     }
 
     // ------------------------------------------
-    // UPDATE
+    // UPDATE DATABASE
     // ------------------------------------------
 
     const result =
@@ -820,7 +855,7 @@ async function updateArticle(
         .run();
 
     // ------------------------------------------
-    // CONFIRM UPDATE
+    // CONFIRM THAT A ROW WAS UPDATED
     // ------------------------------------------
 
     if (
@@ -831,12 +866,28 @@ async function updateArticle(
         "Update ran but no database row was changed.\n\n" +
         "Article ID: " +
         id,
-        { status: 500 }
+        {
+          status: 500,
+          headers: {
+            "Content-Type":
+              "text/plain; charset=UTF-8"
+          }
+        }
       );
     }
 
+    // ------------------------------------------
+    // REDIRECT TO ARTICLES
+    // ------------------------------------------
+
+    const redirectUrl =
+      new URL(
+        adminPath + "/articles",
+        request.url
+      );
+
     return Response.redirect(
-      adminPath + "/articles",
+      redirectUrl.toString(),
       303
     );
 
@@ -844,9 +895,7 @@ async function updateArticle(
     return new Response(
       "COULD NOT UPDATE ARTICLE.\n\n" +
       "REAL DATABASE ERROR:\n\n" +
-      errorMessage(error) +
-      "\n\n" +
-      "This message is intentionally shown so we can fix the exact problem.",
+      errorMessage(error),
       {
         status: 500,
         headers: {
@@ -888,8 +937,14 @@ async function deleteArticle(
       .bind(id)
       .run();
 
+    const redirectUrl =
+      new URL(
+        adminPath + "/articles",
+        request.url
+      );
+
     return Response.redirect(
-      adminPath + "/articles",
+      redirectUrl.toString(),
       303
     );
 
@@ -1156,34 +1211,43 @@ ${escapeHtml(title)} — Psychic Index
 
 body {
   margin: 0;
+
   font-family:
     Arial,
     Helvetica,
     sans-serif;
 
   background: #f5f3f8;
+
   color: #222;
 }
 
 header {
   background: white;
+
   padding: 22px 30px;
-  border-bottom: 1px solid #ddd;
+
+  border-bottom:
+    1px solid #ddd;
 }
 
 header a {
   color: #222;
+
   text-decoration: none;
 }
 
 main {
   max-width: 1150px;
+
   margin: 35px auto;
+
   padding: 20px;
 }
 
 h1 {
   margin-top: 0;
+
   font-size: 32px;
 }
 
@@ -1193,6 +1257,7 @@ h2 {
 
 p {
   color: #666;
+
   line-height: 1.6;
 }
 
