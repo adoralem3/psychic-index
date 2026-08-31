@@ -2,11 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>Psychic Index — Discover Psychics, Readings & Spiritual Guidance</title>
 
@@ -16,7 +12,6 @@
   >
 
   <style>
-
     * {
       box-sizing: border-box;
     }
@@ -39,7 +34,6 @@
 
     body {
       margin: 0;
-
       font-family:
         Inter,
         ui-sans-serif,
@@ -48,9 +42,7 @@
         BlinkMacSystemFont,
         "Segoe UI",
         sans-serif;
-
       color: var(--ink);
-
       background: var(--white);
     }
 
@@ -64,123 +56,71 @@
       font: inherit;
     }
 
-
-    /* ==========================================
-       HEADER
-       ========================================== */
-
     .site-header {
       position: sticky;
-
       top: 0;
-
       z-index: 50;
-
-      background:
-        rgba(255,255,255,0.94);
-
-      backdrop-filter:
-        blur(14px);
-
-      border-bottom:
-        1px solid
-        rgba(232,226,236,0.9);
+      background: rgba(255,255,255,0.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(232,226,236,0.9);
     }
 
     .header-inner {
       max-width: 1240px;
-
       height: 76px;
-
       margin: 0 auto;
-
       padding: 0 28px;
-
       display: flex;
-
       align-items: center;
-
       justify-content: space-between;
-
       gap: 25px;
     }
 
     .logo {
       display: flex;
-
       align-items: center;
-
       gap: 11px;
-
       flex-shrink: 0;
     }
 
     .logo-mark {
       width: 38px;
       height: 38px;
-
       border-radius: 11px;
-
       display: flex;
-
       align-items: center;
       justify-content: center;
-
       color: white;
-
       font-size: 19px;
-
-      background:
-        linear-gradient(
-          135deg,
-          #8663c3,
-          #5c3c94
-        );
-
-      box-shadow:
-        0 7px 18px
-        rgba(108,73,170,0.22);
+      background: linear-gradient(135deg, #8663c3, #5c3c94);
+      box-shadow: 0 7px 18px rgba(108,73,170,0.22);
     }
 
     .logo-name {
       font-size: 16px;
-
       font-weight: 750;
-
       letter-spacing: -0.3px;
     }
 
     .logo-subtitle {
       color: var(--muted);
-
       font-size: 9px;
-
       text-transform: uppercase;
-
       letter-spacing: 1.4px;
-
       margin-top: 2px;
     }
 
     .main-nav {
       display: flex;
-
       align-items: center;
-
       gap: 27px;
-
       margin-left: auto;
     }
 
     .main-nav a {
       color: #5c5664;
-
       font-size: 13px;
-
       font-weight: 520;
-
-      transition:
-        color 0.15s;
     }
 
     .main-nav a:hover {
@@ -189,46 +129,27 @@
 
     .header-button {
       display: inline-flex;
-
       align-items: center;
-
       justify-content: center;
-
       padding: 10px 16px;
-
       border-radius: 8px;
-
       background: var(--ink);
-
       color: white !important;
-
       font-size: 12px !important;
-
       font-weight: 650 !important;
     }
 
     .mobile-menu {
       display: none;
-
       border: 0;
-
       background: transparent;
-
       font-size: 23px;
-
       cursor: pointer;
     }
 
-
-    /* ==========================================
-       HERO
-       ========================================== */
-
     .hero {
       position: relative;
-
       overflow: hidden;
-
       background:
         linear-gradient(
           135deg,
@@ -236,252 +157,152 @@
           #f7f1fa 48%,
           #fbf8f3 100%
         );
-
-      border-bottom:
-        1px solid
-        var(--line);
+      border-bottom: 1px solid var(--line);
     }
 
     .hero::before {
       content: "";
-
       position: absolute;
-
       width: 520px;
       height: 520px;
-
       border-radius: 50%;
-
-      background:
-        rgba(137,99,193,0.09);
-
+      background: rgba(137,99,193,0.09);
       filter: blur(3px);
-
       top: -280px;
-
       right: -120px;
     }
 
     .hero::after {
       content: "✦";
-
       position: absolute;
-
       right: 12%;
-
       top: 22%;
-
-      color:
-        rgba(108,73,170,0.17);
-
+      color: rgba(108,73,170,0.17);
       font-size: 90px;
     }
 
     .hero-inner {
       max-width: 1240px;
-
       margin: 0 auto;
-
       min-height: 580px;
-
       padding: 90px 28px 100px;
-
       display: grid;
-
       grid-template-columns:
         minmax(0, 1.05fr)
         minmax(350px, 0.95fr);
-
       align-items: center;
-
       gap: 80px;
-
       position: relative;
-
       z-index: 1;
     }
 
     .eyebrow {
       color: var(--purple);
-
       font-size: 10px;
-
       font-weight: 750;
-
       text-transform: uppercase;
-
       letter-spacing: 2px;
-
       margin-bottom: 17px;
     }
 
     .hero h1 {
       max-width: 680px;
-
       margin: 0;
-
-      font-family:
-        Georgia,
-        "Times New Roman",
-        serif;
-
-      font-size:
-        clamp(48px, 6vw, 76px);
-
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(48px, 6vw, 76px);
       line-height: 0.99;
-
       font-weight: 500;
-
       letter-spacing: -3.8px;
     }
 
     .hero h1 em {
       color: var(--purple);
-
       font-style: italic;
     }
 
     .hero-text {
       max-width: 570px;
-
       margin-top: 25px;
-
       color: var(--muted);
-
       font-size: 16px;
-
       line-height: 1.75;
     }
 
     .hero-search {
       margin-top: 32px;
-
       max-width: 610px;
-
       display: flex;
-
       align-items: center;
-
       background: white;
-
-      border:
-        1px solid
-        #ded7e5;
-
+      border: 1px solid #ded7e5;
       border-radius: 11px;
-
       padding: 6px;
-
-      box-shadow:
-        0 14px 35px
-        rgba(65,42,91,0.08);
+      box-shadow: 0 14px 35px rgba(65,42,91,0.08);
     }
 
     .search-icon {
       padding-left: 13px;
-
       color: #9b93a3;
-
       font-size: 20px;
     }
 
     .hero-search input {
       min-width: 0;
-
       flex: 1;
-
       border: 0;
-
       outline: 0;
-
       padding: 12px;
-
       color: var(--ink);
-
       background: transparent;
-
       font-size: 13px;
     }
 
     .search-button {
       border: 0;
-
       border-radius: 8px;
-
       padding: 12px 19px;
-
       background: var(--purple);
-
       color: white;
-
       font-weight: 650;
-
       font-size: 12px;
-
       cursor: pointer;
     }
 
     .hero-note {
       margin-top: 14px;
-
       color: #8d8694;
-
       font-size: 10px;
     }
 
-
-    /* ==========================================
-       HERO VISUAL
-       ========================================== */
-
     .hero-art {
       min-height: 400px;
-
       position: relative;
-
       display: flex;
-
       align-items: center;
-
       justify-content: center;
     }
 
     .art-orbit {
       width: 360px;
       height: 360px;
-
       border-radius: 50%;
-
-      border:
-        1px solid
-        rgba(108,73,170,0.16);
-
+      border: 1px solid rgba(108,73,170,0.16);
       position: relative;
     }
 
     .art-orbit::before {
       content: "";
-
       position: absolute;
-
       inset: 32px;
-
       border-radius: 50%;
-
-      border:
-        1px dashed
-        rgba(108,73,170,0.18);
+      border: 1px dashed rgba(108,73,170,0.18);
     }
 
     .art-orbit::after {
       content: "";
-
       position: absolute;
-
       inset: 75px;
-
       border-radius: 50%;
-
       background:
         radial-gradient(
           circle at 35% 30%,
@@ -489,17 +310,12 @@
           rgba(221,208,239,0.75),
           rgba(181,153,213,0.52)
         );
-
-      box-shadow:
-        0 25px 70px
-        rgba(90,54,127,0.18);
+      box-shadow: 0 25px 70px rgba(90,54,127,0.18);
     }
 
     .art-star {
       position: absolute;
-
       color: var(--purple);
-
       font-size: 21px;
     }
 
@@ -511,41 +327,25 @@
     .star-two {
       right: 10px;
       top: 125px;
-
       font-size: 14px;
     }
 
     .star-three {
       right: 70px;
       bottom: 35px;
-
       font-size: 18px;
     }
 
     .art-card {
       position: absolute;
-
       z-index: 2;
-
       width: 235px;
-
       padding: 21px;
-
-      border:
-        1px solid
-        rgba(255,255,255,0.8);
-
+      border: 1px solid rgba(255,255,255,0.8);
       border-radius: 15px;
-
-      background:
-        rgba(255,255,255,0.82);
-
-      backdrop-filter:
-        blur(15px);
-
-      box-shadow:
-        0 20px 55px
-        rgba(61,38,87,0.14);
+      background: rgba(255,255,255,0.82);
+      backdrop-filter: blur(15px);
+      box-shadow: 0 20px 55px rgba(61,38,87,0.14);
     }
 
     .art-card.top {
@@ -560,133 +360,78 @@
 
     .art-card-label {
       color: var(--purple);
-
       font-size: 9px;
-
       font-weight: 750;
-
       text-transform: uppercase;
-
       letter-spacing: 1.4px;
     }
 
     .art-card h3 {
       margin: 9px 0 6px;
-
-      font-family:
-        Georgia,
-        serif;
-
+      font-family: Georgia, serif;
       font-size: 20px;
-
       font-weight: 500;
     }
 
     .art-card p {
       margin: 0;
-
       color: var(--muted);
-
       font-size: 10px;
-
       line-height: 1.55;
     }
 
-
-    /* ==========================================
-       SECTION
-       ========================================== */
-
     .section {
       max-width: 1240px;
-
       margin: 0 auto;
-
       padding: 90px 28px;
     }
 
     .section-heading {
       display: flex;
-
       align-items: flex-end;
-
       justify-content: space-between;
-
       gap: 25px;
-
       margin-bottom: 35px;
     }
 
     .section-heading h2 {
       margin: 0;
-
-      font-family:
-        Georgia,
-        "Times New Roman",
-        serif;
-
+      font-family: Georgia, "Times New Roman", serif;
       font-size: 38px;
-
       font-weight: 500;
-
       letter-spacing: -1.5px;
     }
 
     .section-heading p {
       max-width: 480px;
-
       margin: 9px 0 0;
-
       color: var(--muted);
-
       font-size: 13px;
-
       line-height: 1.65;
     }
 
     .view-all {
       color: var(--purple);
-
       font-size: 12px;
-
       font-weight: 650;
-
       white-space: nowrap;
     }
 
-
-    /* ==========================================
-       CATEGORIES
-       ========================================== */
-
     .categories {
       display: grid;
-
-      grid-template-columns:
-        repeat(6, 1fr);
-
+      grid-template-columns: repeat(6, 1fr);
       gap: 12px;
     }
 
     .category-card {
       min-height: 145px;
-
       padding: 19px;
-
-      border:
-        1px solid
-        var(--line);
-
+      border: 1px solid var(--line);
       border-radius: 12px;
-
       background: white;
-
       display: flex;
-
       flex-direction: column;
-
       justify-content: space-between;
-
       transition:
         transform 0.18s,
         box-shadow 0.18s,
@@ -694,125 +439,75 @@
     }
 
     .category-card:hover {
-      transform:
-        translateY(-4px);
-
-      border-color:
-        #d8cce6;
-
-      box-shadow:
-        0 15px 35px
-        rgba(70,45,90,0.08);
+      transform: translateY(-4px);
+      border-color: #d8cce6;
+      box-shadow: 0 15px 35px rgba(70,45,90,0.08);
     }
 
     .category-icon {
       width: 35px;
       height: 35px;
-
       border-radius: 10px;
-
       display: flex;
-
       align-items: center;
       justify-content: center;
-
       background: var(--purple-soft);
-
       color: var(--purple);
-
       font-size: 17px;
     }
 
     .category-card h3 {
       margin: 16px 0 0;
-
       font-size: 13px;
-
       font-weight: 650;
     }
 
     .category-card span {
       margin-top: 5px;
-
       color: #938c9a;
-
       font-size: 10px;
     }
 
-
-    /* ==========================================
-       FEATURED
-       ========================================== */
-
     .featured-section {
       background: var(--cream);
-
-      border-top:
-        1px solid
-        var(--line);
-
-      border-bottom:
-        1px solid
-        var(--line);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
     }
 
     .psychic-grid {
       display: grid;
-
-      grid-template-columns:
-        repeat(3, 1fr);
-
+      grid-template-columns: repeat(3, 1fr);
       gap: 20px;
     }
 
     .psychic-card {
       background: white;
-
-      border:
-        1px solid
-        var(--line);
-
+      border: 1px solid var(--line);
       border-radius: 14px;
-
       overflow: hidden;
-
       transition:
         transform 0.18s,
         box-shadow 0.18s;
     }
 
     .psychic-card:hover {
-      transform:
-        translateY(-4px);
-
-      box-shadow:
-        0 18px 40px
-        rgba(66,45,84,0.09);
+      transform: translateY(-4px);
+      box-shadow: 0 18px 40px rgba(66,45,84,0.09);
     }
 
     .psychic-image {
       height: 220px;
-
       display: flex;
-
       align-items: center;
-
       justify-content: center;
-
       background:
         linear-gradient(
           145deg,
           #eee5f4,
           #ddd1e8
         );
-
-      color:
-        rgba(90,60,120,0.45);
-
-      font-family:
-        Georgia,
-        serif;
-
+      color: rgba(90,60,120,0.45);
+      font-family: Georgia, serif;
       font-size: 65px;
     }
 
@@ -822,55 +517,37 @@
 
     .verified {
       display: inline-flex;
-
       align-items: center;
-
       gap: 5px;
-
       color: var(--purple);
-
       font-size: 9px;
-
       text-transform: uppercase;
-
       font-weight: 750;
-
       letter-spacing: 0.9px;
     }
 
     .psychic-content h3 {
       margin: 9px 0 4px;
-
-      font-family:
-        Georgia,
-        serif;
-
+      font-family: Georgia, serif;
       font-size: 23px;
-
       font-weight: 500;
     }
 
     .specialty {
       color: var(--muted);
-
       font-size: 11px;
     }
 
     .rating {
       display: flex;
-
       align-items: center;
-
       gap: 7px;
-
       margin-top: 15px;
-
       font-size: 11px;
     }
 
     .stars {
       color: var(--gold);
-
       letter-spacing: 1px;
     }
 
@@ -880,93 +557,58 @@
 
     .card-footer {
       display: flex;
-
       align-items: center;
-
       justify-content: space-between;
-
       margin-top: 19px;
-
       padding-top: 15px;
-
-      border-top:
-        1px solid
-        var(--line);
+      border-top: 1px solid var(--line);
     }
 
     .online {
       color: #4b8062;
-
       font-size: 10px;
-
       font-weight: 600;
     }
 
     .profile-link {
       color: var(--purple);
-
       font-size: 11px;
-
       font-weight: 650;
     }
 
-
-    /* ==========================================
-       ARTICLES
-       ========================================== */
-
     .article-grid {
       display: grid;
-
-      grid-template-columns:
-        repeat(3, 1fr);
-
+      grid-template-columns: repeat(3, 1fr);
       gap: 20px;
     }
 
     .article-card {
-      border:
-        1px solid
-        var(--line);
-
+      border: 1px solid var(--line);
       border-radius: 13px;
-
       overflow: hidden;
-
       background: white;
-
       transition:
         transform 0.18s,
         box-shadow 0.18s;
     }
 
     .article-card:hover {
-      transform:
-        translateY(-4px);
-
-      box-shadow:
-        0 18px 38px
-        rgba(65,42,84,0.08);
+      transform: translateY(-4px);
+      box-shadow: 0 18px 38px rgba(65,42,84,0.08);
     }
 
     .article-image {
       height: 175px;
-
       display: flex;
-
       align-items: center;
-
       justify-content: center;
-
       background:
         linear-gradient(
           135deg,
           #ede5f4,
           #f4ece5
         );
-
       color: rgba(93,64,122,0.35);
-
       font-size: 42px;
     }
 
@@ -976,77 +618,60 @@
 
     .article-category {
       color: var(--purple);
-
       font-size: 9px;
-
       font-weight: 750;
-
       text-transform: uppercase;
-
       letter-spacing: 1.2px;
     }
 
     .article-body h3 {
       margin: 10px 0 8px;
-
-      font-family:
-        Georgia,
-        serif;
-
+      font-family: Georgia, serif;
       font-size: 21px;
-
       line-height: 1.2;
-
       font-weight: 500;
     }
 
     .article-body p {
       margin: 0;
-
       color: var(--muted);
-
       font-size: 11px;
-
       line-height: 1.65;
     }
 
     .article-read {
       display: inline-block;
-
       margin-top: 16px;
-
       color: var(--purple);
-
       font-size: 10px;
-
       font-weight: 700;
     }
 
-
-    /* ==========================================
-       WHY US
-       ========================================== */
+    .article-loading,
+    .article-empty,
+    .article-error {
+      grid-column: 1 / -1;
+      padding: 45px 25px;
+      text-align: center;
+      border: 1px dashed var(--line);
+      border-radius: 13px;
+      color: var(--muted);
+      font-size: 13px;
+      background: #fff;
+    }
 
     .why-section {
       background: var(--ink);
-
       color: white;
     }
 
     .why-inner {
       max-width: 1240px;
-
       margin: 0 auto;
-
       padding: 90px 28px;
-
       display: grid;
-
-      grid-template-columns:
-        0.9fr 1.1fr;
-
+      grid-template-columns: 0.9fr 1.1fr;
       gap: 90px;
-
       align-items: center;
     }
 
@@ -1056,194 +681,117 @@
 
     .why-inner h2 {
       margin: 0;
-
-      font-family:
-        Georgia,
-        serif;
-
+      font-family: Georgia, serif;
       font-size: 45px;
-
       line-height: 1.05;
-
       font-weight: 500;
-
       letter-spacing: -1.8px;
     }
 
     .why-inner > div > p {
-      color:
-        rgba(255,255,255,0.62);
-
+      color: rgba(255,255,255,0.62);
       font-size: 13px;
-
       line-height: 1.8;
-
       margin-top: 20px;
     }
 
     .benefits {
       display: grid;
-
-      grid-template-columns:
-        repeat(2, 1fr);
-
+      grid-template-columns: repeat(2, 1fr);
       gap: 15px;
     }
 
     .benefit {
       padding: 22px;
-
-      border:
-        1px solid
-        rgba(255,255,255,0.1);
-
+      border: 1px solid rgba(255,255,255,0.1);
       border-radius: 12px;
-
-      background:
-        rgba(255,255,255,0.035);
+      background: rgba(255,255,255,0.035);
     }
 
     .benefit-icon {
       color: #c0a5e5;
-
       font-size: 20px;
-
       margin-bottom: 15px;
     }
 
     .benefit h3 {
       margin: 0;
-
       font-size: 13px;
     }
 
     .benefit p {
       margin: 7px 0 0;
-
-      color:
-        rgba(255,255,255,0.52);
-
+      color: rgba(255,255,255,0.52);
       font-size: 10px;
-
       line-height: 1.6;
     }
 
-
-    /* ==========================================
-       CTA
-       ========================================== */
-
     .cta {
       max-width: 1240px;
-
       margin: 0 auto;
-
       padding: 90px 28px;
-
       text-align: center;
     }
 
     .cta h2 {
       margin: 0;
-
-      font-family:
-        Georgia,
-        serif;
-
+      font-family: Georgia, serif;
       font-size: 43px;
-
       font-weight: 500;
-
       letter-spacing: -1.5px;
     }
 
     .cta p {
       max-width: 500px;
-
       margin: 15px auto 25px;
-
       color: var(--muted);
-
       font-size: 13px;
-
       line-height: 1.7;
     }
 
     .cta-button {
       display: inline-flex;
-
       padding: 12px 21px;
-
       border-radius: 8px;
-
       background: var(--purple);
-
       color: white;
-
       font-size: 12px;
-
       font-weight: 650;
     }
 
-
-    /* ==========================================
-       FOOTER
-       ========================================== */
-
     footer {
       background: #17131e;
-
       color: white;
     }
 
     .footer-inner {
       max-width: 1240px;
-
       margin: 0 auto;
-
       padding: 55px 28px 28px;
-
       display: grid;
-
-      grid-template-columns:
-        1.5fr
-        repeat(3, 1fr);
-
+      grid-template-columns: 1.5fr repeat(3, 1fr);
       gap: 45px;
     }
 
     .footer-brand p {
       max-width: 310px;
-
-      color:
-        rgba(255,255,255,0.48);
-
+      color: rgba(255,255,255,0.48);
       font-size: 11px;
-
       line-height: 1.7;
     }
 
     .footer-column h3 {
       margin: 0 0 16px;
-
-      color:
-        rgba(255,255,255,0.9);
-
+      color: rgba(255,255,255,0.9);
       font-size: 10px;
-
       text-transform: uppercase;
-
       letter-spacing: 1.2px;
     }
 
     .footer-column a {
       display: block;
-
-      color:
-        rgba(255,255,255,0.5);
-
+      color: rgba(255,255,255,0.5);
       font-size: 11px;
-
       margin-bottom: 10px;
     }
 
@@ -1253,43 +801,24 @@
 
     .footer-bottom {
       max-width: 1240px;
-
       margin: 0 auto;
-
       padding: 20px 28px 25px;
-
-      border-top:
-        1px solid
-        rgba(255,255,255,0.08);
-
-      color:
-        rgba(255,255,255,0.35);
-
+      border-top: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.35);
       font-size: 9px;
-
       display: flex;
-
       justify-content: space-between;
-
       gap: 20px;
     }
 
-
-    /* ==========================================
-       RESPONSIVE
-       ========================================== */
-
     @media (max-width: 1000px) {
-
       .main-nav {
         gap: 15px;
       }
 
       .hero-inner {
         grid-template-columns: 1fr;
-
         gap: 25px;
-
         padding-top: 65px;
       }
 
@@ -1298,24 +827,18 @@
       }
 
       .categories {
-        grid-template-columns:
-          repeat(3, 1fr);
+        grid-template-columns: repeat(3, 1fr);
       }
 
       .why-inner {
         grid-template-columns: 1fr;
-
         gap: 45px;
       }
-
     }
 
-
     @media (max-width: 760px) {
-
       .header-inner {
         height: 68px;
-
         padding: 0 18px;
       }
 
@@ -1328,14 +851,11 @@
       }
 
       .hero-inner {
-        padding:
-          65px 20px
-          70px;
+        padding: 65px 20px 70px;
       }
 
       .hero h1 {
         font-size: 49px;
-
         letter-spacing: -2.6px;
       }
 
@@ -1357,22 +877,16 @@
 
       .hero-art {
         transform: scale(0.82);
-
-        margin:
-          -35px
-          0;
+        margin: -35px 0;
       }
 
       .section {
-        padding:
-          65px 20px;
+        padding: 65px 20px;
       }
 
       .section-heading {
         align-items: flex-start;
-
         flex-direction: column;
-
         margin-bottom: 25px;
       }
 
@@ -1381,8 +895,7 @@
       }
 
       .categories {
-        grid-template-columns:
-          repeat(2, 1fr);
+        grid-template-columns: repeat(2, 1fr);
       }
 
       .psychic-grid,
@@ -1391,8 +904,7 @@
       }
 
       .why-inner {
-        padding:
-          65px 20px;
+        padding: 65px 20px;
       }
 
       .why-inner h2 {
@@ -1404,8 +916,7 @@
       }
 
       .cta {
-        padding:
-          65px 20px;
+        padding: 65px 20px;
       }
 
       .cta h2 {
@@ -1413,101 +924,52 @@
       }
 
       .footer-inner {
-        grid-template-columns:
-          repeat(2, 1fr);
-
-        padding:
-          45px 20px 25px;
+        grid-template-columns: repeat(2, 1fr);
+        padding: 45px 20px 25px;
       }
 
       .footer-brand {
-        grid-column:
-          1 / -1;
+        grid-column: 1 / -1;
       }
 
       .footer-bottom {
-        padding:
-          18px 20px 22px;
-
+        padding: 18px 20px 22px;
         flex-direction: column;
       }
-
     }
 
-
     @media (max-width: 430px) {
-
       .categories {
         grid-template-columns: 1fr;
       }
 
       .hero-art {
         transform: scale(0.68);
-
-        margin:
-          -65px
-          0;
+        margin: -65px 0;
       }
-
     }
-
   </style>
-
 </head>
-
 
 <body>
 
-
-  <!-- ========================================
-       HEADER
-       ======================================== -->
-
   <header class="site-header">
-
     <div class="header-inner">
 
-      <a
-        href="/"
-        class="logo"
-      >
-
-        <div class="logo-mark">
-          ✦
-        </div>
+      <a href="/" class="logo">
+        <div class="logo-mark">✦</div>
 
         <div>
-
-          <div class="logo-name">
-            Psychic Index
-          </div>
-
-          <div class="logo-subtitle">
-            Discover & Explore
-          </div>
-
+          <div class="logo-name">Psychic Index</div>
+          <div class="logo-subtitle">Discover & Explore</div>
         </div>
-
       </a>
 
-
       <nav class="main-nav">
-
-        <a href="#psychics">
-          Psychics
-        </a>
-
-        <a href="#categories">
-          Categories
-        </a>
-
-        <a href="#articles">
-          Articles
-        </a>
-
-        <a href="#reviews">
-          Reviews
-        </a>
+        <a href="#psychics">Psychics</a>
+        <a href="#categories">Categories</a>
+        <a href="#articles">Articles</a>
+        <a href="#reviews">Reviews</a>
 
         <a
           href="/admin/PX9-vQ72-Lm4!zK81-Rt6"
@@ -1515,31 +977,19 @@
         >
           List Your Service
         </a>
-
       </nav>
 
-
-      <button
-        class="mobile-menu"
-        aria-label="Open menu"
-      >
+      <button class="mobile-menu" aria-label="Open menu">
         ☰
       </button>
 
     </div>
-
   </header>
 
-
-
-  <!-- ========================================
-       HERO
-       ======================================== -->
 
   <section class="hero">
 
     <div class="hero-inner">
-
 
       <div>
 
@@ -1560,15 +1010,12 @@
           kind of guidance that feels right for you.
         </p>
 
-
         <form
           class="hero-search"
           onsubmit="return performSearch(event)"
         >
 
-          <span class="search-icon">
-            ⌕
-          </span>
+          <span class="search-icon">⌕</span>
 
           <input
             id="searchInput"
@@ -1577,15 +1024,11 @@
             aria-label="Search Psychic Index"
           >
 
-          <button
-            class="search-button"
-            type="submit"
-          >
+          <button class="search-button" type="submit">
             Search
           </button>
 
         </form>
-
 
         <div class="hero-note">
           Explore by specialty, reading type or category.
@@ -1594,25 +1037,15 @@
       </div>
 
 
-
       <div class="hero-art">
 
         <div class="art-orbit">
 
-          <span class="art-star star-one">
-            ✦
-          </span>
-
-          <span class="art-star star-two">
-            ✧
-          </span>
-
-          <span class="art-star star-three">
-            ✦
-          </span>
+          <span class="art-star star-one">✦</span>
+          <span class="art-star star-two">✧</span>
+          <span class="art-star star-three">✦</span>
 
         </div>
-
 
         <div class="art-card top">
 
@@ -1630,7 +1063,6 @@
           </p>
 
         </div>
-
 
         <div class="art-card bottom">
 
@@ -1656,15 +1088,7 @@
   </section>
 
 
-
-  <!-- ========================================
-       CATEGORIES
-       ======================================== -->
-
-  <section
-    class="section"
-    id="categories"
-  >
+  <section class="section" id="categories">
 
     <div class="section-heading">
 
@@ -1685,10 +1109,7 @@
 
       </div>
 
-      <a
-        href="#categories"
-        class="view-all"
-      >
+      <a href="#categories" class="view-all">
         View all categories →
       </a>
 
@@ -1697,148 +1118,58 @@
 
     <div class="categories">
 
-
-      <a
-        href="#psychics"
-        class="category-card"
-      >
-
-        <div class="category-icon">
-          ✦
-        </div>
+      <a href="#psychics" class="category-card">
+        <div class="category-icon">✦</div>
 
         <div>
-
-          <h3>
-            Psychic Readings
-          </h3>
-
-          <span>
-            Explore readers
-          </span>
-
+          <h3>Psychic Readings</h3>
+          <span>Explore readers</span>
         </div>
-
       </a>
 
-
-      <a
-        href="#psychics"
-        class="category-card"
-      >
-
-        <div class="category-icon">
-          ◇
-        </div>
+      <a href="#psychics" class="category-card">
+        <div class="category-icon">◇</div>
 
         <div>
-
-          <h3>
-            Tarot
-          </h3>
-
-          <span>
-            Cards & readings
-          </span>
-
+          <h3>Tarot</h3>
+          <span>Cards & readings</span>
         </div>
-
       </a>
 
-
-      <a
-        href="#psychics"
-        class="category-card"
-      >
-
-        <div class="category-icon">
-          ☾
-        </div>
+      <a href="#psychics" class="category-card">
+        <div class="category-icon">☾</div>
 
         <div>
-
-          <h3>
-            Astrology
-          </h3>
-
-          <span>
-            Stars & charts
-          </span>
-
+          <h3>Astrology</h3>
+          <span>Stars & charts</span>
         </div>
-
       </a>
 
-
-      <a
-        href="#psychics"
-        class="category-card"
-      >
-
-        <div class="category-icon">
-          ◎
-        </div>
+      <a href="#psychics" class="category-card">
+        <div class="category-icon">◎</div>
 
         <div>
-
-          <h3>
-            Mediumship
-          </h3>
-
-          <span>
-            Spirit guidance
-          </span>
-
+          <h3>Mediumship</h3>
+          <span>Spirit guidance</span>
         </div>
-
       </a>
 
-
-      <a
-        href="#psychics"
-        class="category-card"
-      >
-
-        <div class="category-icon">
-          ♡
-        </div>
+      <a href="#psychics" class="category-card">
+        <div class="category-icon">♡</div>
 
         <div>
-
-          <h3>
-            Love & Relationships
-          </h3>
-
-          <span>
-            Matters of the heart
-          </span>
-
+          <h3>Love & Relationships</h3>
+          <span>Matters of the heart</span>
         </div>
-
       </a>
 
-
-      <a
-        href="#psychics"
-        class="category-card"
-      >
-
-        <div class="category-icon">
-          ✧
-        </div>
+      <a href="#psychics" class="category-card">
+        <div class="category-icon">✧</div>
 
         <div>
-
-          <h3>
-            Spiritual Guidance
-          </h3>
-
-          <span>
-            Personal growth
-          </span>
-
+          <h3>Spiritual Guidance</h3>
+          <span>Personal growth</span>
         </div>
-
       </a>
 
     </div>
@@ -1846,15 +1177,7 @@
   </section>
 
 
-
-  <!-- ========================================
-       FEATURED PSYCHICS
-       ======================================== -->
-
-  <section
-    class="featured-section"
-    id="psychics"
-  >
+  <section class="featured-section" id="psychics">
 
     <div class="section">
 
@@ -1877,10 +1200,7 @@
 
         </div>
 
-        <a
-          href="#psychics"
-          class="view-all"
-        >
+        <a href="#psychics" class="view-all">
           Browse all psychics →
         </a>
 
@@ -1888,7 +1208,6 @@
 
 
       <div class="psychic-grid">
-
 
         <article class="psychic-card">
 
@@ -1911,30 +1230,15 @@
             </div>
 
             <div class="rating">
-
-              <span class="stars">
-                ★★★★★
-              </span>
-
-              <span class="rating-count">
-                New listing
-              </span>
-
+              <span class="stars">★★★★★</span>
+              <span class="rating-count">New listing</span>
             </div>
 
             <div class="card-footer">
-
-              <span class="online">
-                ● Online
-              </span>
-
-              <a
-                href="#"
-                class="profile-link"
-              >
+              <span class="online">● Online</span>
+              <a href="#" class="profile-link">
                 View profile →
               </a>
-
             </div>
 
           </div>
@@ -1963,30 +1267,15 @@
             </div>
 
             <div class="rating">
-
-              <span class="stars">
-                ★★★★★
-              </span>
-
-              <span class="rating-count">
-                New listing
-              </span>
-
+              <span class="stars">★★★★★</span>
+              <span class="rating-count">New listing</span>
             </div>
 
             <div class="card-footer">
-
-              <span class="online">
-                ● Online
-              </span>
-
-              <a
-                href="#"
-                class="profile-link"
-              >
+              <span class="online">● Online</span>
+              <a href="#" class="profile-link">
                 View profile →
               </a>
-
             </div>
 
           </div>
@@ -2015,36 +1304,20 @@
             </div>
 
             <div class="rating">
-
-              <span class="stars">
-                ★★★★★
-              </span>
-
-              <span class="rating-count">
-                New listing
-              </span>
-
+              <span class="stars">★★★★★</span>
+              <span class="rating-count">New listing</span>
             </div>
 
             <div class="card-footer">
-
-              <span class="online">
-                ● Online
-              </span>
-
-              <a
-                href="#"
-                class="profile-link"
-              >
+              <span class="online">● Online</span>
+              <a href="#" class="profile-link">
                 View profile →
               </a>
-
             </div>
 
           </div>
 
         </article>
-
 
       </div>
 
@@ -2053,15 +1326,9 @@
   </section>
 
 
+  <!-- ARTICLES FROM D1 -->
 
-  <!-- ========================================
-       ARTICLES
-       ======================================== -->
-
-  <section
-    class="section"
-    id="articles"
-  >
+  <section class="section" id="articles">
 
     <div class="section-heading">
 
@@ -2082,133 +1349,30 @@
 
       </div>
 
-      <a
-        href="/articles"
-        class="view-all"
-      >
+      <a href="/articles" class="view-all">
         View all articles →
       </a>
 
     </div>
 
 
-    <div class="article-grid">
+    <div
+      id="articleGrid"
+      class="article-grid"
+    >
 
-
-      <article class="article-card">
-
-        <div class="article-image">
-          ✦
-        </div>
-
-        <div class="article-body">
-
-          <div class="article-category">
-            Psychic Readings
-          </div>
-
-          <h3>
-            How Psychic Readings Work
-          </h3>
-
-          <p>
-            A beginner-friendly look at psychic
-            readings and what you can expect
-            from a session.
-          </p>
-
-          <a
-            href="#"
-            class="article-read"
-          >
-            Read article →
-          </a>
-
-        </div>
-
-      </article>
-
-
-      <article class="article-card">
-
-        <div class="article-image">
-          ☾
-        </div>
-
-        <div class="article-body">
-
-          <div class="article-category">
-            Tarot
-          </div>
-
-          <h3>
-            Understanding Tarot Readings
-          </h3>
-
-          <p>
-            Explore the history, symbolism and
-            different approaches to tarot readings.
-          </p>
-
-          <a
-            href="#"
-            class="article-read"
-          >
-            Read article →
-          </a>
-
-        </div>
-
-      </article>
-
-
-      <article class="article-card">
-
-        <div class="article-image">
-          ◇
-        </div>
-
-        <div class="article-body">
-
-          <div class="article-category">
-            Astrology
-          </div>
-
-          <h3>
-            Getting Started With Astrology
-          </h3>
-
-          <p>
-            Discover the basics of birth charts,
-            signs and planetary influences.
-          </p>
-
-          <a
-            href="#"
-            class="article-read"
-          >
-            Read article →
-          </a>
-
-        </div>
-
-      </article>
-
+      <div class="article-loading">
+        Loading the latest articles...
+      </div>
 
     </div>
 
   </section>
 
 
-
-  <!-- ========================================
-       WHY PSYCHIC INDEX
-       ======================================== -->
-
   <section class="why-section">
 
     <div class="why-inner">
-
 
       <div>
 
@@ -2231,7 +1395,6 @@
 
 
       <div class="benefits">
-
 
         <div class="benefit">
 
@@ -2307,18 +1470,12 @@
 
         </div>
 
-
       </div>
 
     </div>
 
   </section>
 
-
-
-  <!-- ========================================
-       CTA
-       ======================================== -->
 
   <section class="cta">
 
@@ -2335,39 +1492,26 @@
       mediumship and spiritual guidance in one place.
     </p>
 
-    <a
-      href="#categories"
-      class="cta-button"
-    >
+    <a href="#categories" class="cta-button">
       Explore the directory
     </a>
 
   </section>
 
 
-
-  <!-- ========================================
-       FOOTER
-       ======================================== -->
-
   <footer>
 
     <div class="footer-inner">
 
-
       <div class="footer-brand">
 
-        <a
-          href="/"
-          class="logo"
-        >
+        <a href="/" class="logo">
 
           <div class="logo-mark">
             ✦
           </div>
 
           <div>
-
             <div class="logo-name">
               Psychic Index
             </div>
@@ -2375,7 +1519,6 @@
             <div class="logo-subtitle">
               Discover & Explore
             </div>
-
           </div>
 
         </a>
@@ -2391,78 +1534,38 @@
 
       <div class="footer-column">
 
-        <h3>
-          Explore
-        </h3>
+        <h3>Explore</h3>
 
-        <a href="#psychics">
-          Psychics
-        </a>
-
-        <a href="#categories">
-          Categories
-        </a>
-
-        <a href="#articles">
-          Articles
-        </a>
-
-        <a href="#reviews">
-          Reviews
-        </a>
+        <a href="#psychics">Psychics</a>
+        <a href="#categories">Categories</a>
+        <a href="#articles">Articles</a>
+        <a href="#reviews">Reviews</a>
 
       </div>
 
 
       <div class="footer-column">
 
-        <h3>
-          Categories
-        </h3>
+        <h3>Categories</h3>
 
-        <a href="#categories">
-          Tarot
-        </a>
-
-        <a href="#categories">
-          Astrology
-        </a>
-
-        <a href="#categories">
-          Mediumship
-        </a>
-
-        <a href="#categories">
-          Spiritual Guidance
-        </a>
+        <a href="#categories">Tarot</a>
+        <a href="#categories">Astrology</a>
+        <a href="#categories">Mediumship</a>
+        <a href="#categories">Spiritual Guidance</a>
 
       </div>
 
 
       <div class="footer-column">
 
-        <h3>
-          Psychic Index
-        </h3>
+        <h3>Psychic Index</h3>
 
-        <a href="#">
-          About
-        </a>
-
-        <a href="#">
-          Contact
-        </a>
-
-        <a href="#">
-          Privacy
-        </a>
-
-        <a href="#">
-          Terms
-        </a>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
 
       </div>
-
 
     </div>
 
@@ -2482,8 +1585,176 @@
   </footer>
 
 
-
   <script>
+
+    /*
+     * Load published articles from the Worker API.
+     *
+     * The public Worker endpoint should return:
+     *
+     * {
+     *   "articles": [...]
+     * }
+     *
+     * or simply:
+     *
+     * [...]
+     *
+     * We support both formats.
+     */
+
+    async function loadArticles() {
+
+      const grid =
+        document.getElementById("articleGrid");
+
+      try {
+
+        const response =
+          await fetch("/api/articles");
+
+        if (!response.ok) {
+          throw new Error(
+            "Article API returned " +
+            response.status
+          );
+        }
+
+        const data =
+          await response.json();
+
+        const articles =
+          Array.isArray(data)
+            ? data
+            : (
+                Array.isArray(data.articles)
+                  ? data.articles
+                  : []
+              );
+
+        if (!articles.length) {
+
+          grid.innerHTML = `
+            <div class="article-empty">
+              No published articles yet.
+            </div>
+          `;
+
+          return;
+        }
+
+
+        grid.innerHTML =
+          articles
+            .slice(0, 3)
+            .map(article => {
+
+              const title =
+                escapeHtml(
+                  article.title || "Untitled article"
+                );
+
+              const excerpt =
+                escapeHtml(
+                  article.excerpt ||
+                  createExcerpt(
+                    article.content || ""
+                  )
+                );
+
+              const category =
+                escapeHtml(
+                  article.category ||
+                  "Psychic Index"
+                );
+
+              const slug =
+                encodeURIComponent(
+                  article.slug || ""
+                );
+
+              return `
+                <article class="article-card">
+
+                  <div class="article-image">
+                    ✦
+                  </div>
+
+                  <div class="article-body">
+
+                    <div class="article-category">
+                      ${category}
+                    </div>
+
+                    <h3>
+                      ${title}
+                    </h3>
+
+                    <p>
+                      ${excerpt}
+                    </p>
+
+                    <a
+                      href="/articles/${slug}"
+                      class="article-read"
+                    >
+                      Read article →
+                    </a>
+
+                  </div>
+
+                </article>
+              `;
+
+            })
+            .join("");
+
+      } catch (error) {
+
+        console.error(
+          "Could not load articles:",
+          error
+        );
+
+        grid.innerHTML = `
+          <div class="article-error">
+            Articles are temporarily unavailable.
+          </div>
+        `;
+
+      }
+
+    }
+
+
+    function createExcerpt(text) {
+
+      const clean =
+        String(text)
+          .replace(/<[^>]*>/g, "")
+          .replace(/\s+/g, " ")
+          .trim();
+
+      if (clean.length <= 150) {
+        return clean;
+      }
+
+      return clean.substring(0, 147) + "...";
+
+    }
+
+
+    function escapeHtml(value) {
+
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+    }
+
 
     function performSearch(event) {
 
@@ -2513,9 +1784,10 @@
 
     }
 
+
+    loadArticles();
+
   </script>
 
-
 </body>
-
 </html>
